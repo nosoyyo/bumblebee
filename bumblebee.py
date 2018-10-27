@@ -1,12 +1,11 @@
 import json
 import time
+from random import random
 import functools
 
+import jfw
 import requests
-from config import root, larva_url_token, cookies_domain
-
-bee = BumbleBee('cookies.json')
-slowness = 1
+from config import root, self_url_token, cookies_domain
 
 
 class BumbleBeeError(Exception):
@@ -15,9 +14,11 @@ class BumbleBeeError(Exception):
 
 class BumbleBee():
 
+    print(jfw.__doc__)
+
     def __init__(self, cookies_file: str):
 
-        self.larva_url_token = larva_url_token
+        self.self_url_token = self_url_token
 
         with open(cookies_file) as f:
             cookies = json.load(f)
@@ -28,7 +29,7 @@ class BumbleBee():
             'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_0) \
             AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 \
             Safari/537.36',
-            'referer': f'{root}/people/{larva_url_token}/following'}
+            'referer': f'{root}/people/{self_url_token}/following'}
 
     def slow_down(func):
         '''
@@ -36,8 +37,9 @@ class BumbleBee():
         '''
         @functools.wraps(func)
         def wrapper(*args, **kw):
+            slowness = random() + random() + random()
             time.sleep(slowness)
-            print('idiot, slow down...')
+            print(f'idiot, slow down...{slowness:.2f}')
             return func(*args, **kw)
         return wrapper
 
@@ -72,7 +74,7 @@ class BumbleBee():
         return result
 
     def getFollowees(self,
-                     url_token=larva_url_token,
+                     url_token=self_url_token,
                      offset=0,
                      type='latest') -> list:
         '''
