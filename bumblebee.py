@@ -6,7 +6,7 @@ import requests
 from config import root, larva_url_token, cookies_domain
 
 bee = BumbleBee('cookies.json')
-slowness = 0.3
+slowness = 1
 
 
 class BumbleBeeError(Exception):
@@ -42,10 +42,10 @@ class BumbleBee():
         return wrapper
 
     @slow_down
-    def _GET(self, url: str, _params: dict=None, all=False) -> dict:
-        """
-            _params: {'include':['a,b']}
-        """
+    def _GET(self, url: str, _params: dict=None) -> dict:
+        '''
+        :param _params: {'include':['a,b']}
+        '''
         if _params is None:
             _params = {}
         resp = requests.get(url, cookies=self.cookies,
@@ -56,22 +56,35 @@ class BumbleBee():
         else:
             try:
                 result = json.loads(resp.text)
+                print('1 result grabbed.')
                 return result
             except json.JSONDecodeError:
                 print('Cannot decode JSON for', url)
                 raise BumbleBeeError
 
+    def _GETALL(self, url: str) -> dict:
+        resp = self._GET(url)
+        result = resp['data']
+        while not resp['paging']['is_end']:
+            offset = {'offset': int(resp['paging']['next'].split('=')[-1])}
+            resp = self._GET(url, _params=offset)
+            result += resp['data']
+        return result
+
     def getFollowees(self,
                      url_token=larva_url_token,
-                     offset=0,) -> list:
+                     offset=0,
+                     type='latest') -> list:
         '''
         :param url_token: <str> Only `url_token` works in url when fetching.
         :param offset: <int>
         '''
-        _params = {'offset': offset}
-        resp = self._GET(
-            f'{root}/api/v4/members/{url_token}/followees', _params)
-        return [m['url_token'] for m in resp['data']]
+        endpoint = f'{root}/api/v4/members/{url_token}/followees'
+        if type is 'latest':
+            result = self._GET(endpoint)['data']
+        elif type is 'all':
+            result = self._GETALL(endpoint)
+        return [m['url_token'] for m in result]
 
     def pins(self):
         return
