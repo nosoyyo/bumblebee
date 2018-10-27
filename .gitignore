@@ -1,6 +1,8 @@
 # User Custom
 
+config.py
 cookie.json
+.vscode
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
