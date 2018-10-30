@@ -1,7 +1,7 @@
 import logging
 
 from base import BeeModel
-from bumblebee import bumblebee
+from bumblebee import BumbleBee
 from config import self_url_token
 
 
