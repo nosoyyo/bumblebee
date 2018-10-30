@@ -45,7 +45,7 @@ class BumbleBee():
             slowness = random() + random() + random()
             time.sleep(slowness)
             print(f'idiot, slow down...{slowness:.2f}')
-            return func(*args, **kw)
+            return func(self, *args, **kw)
         return wrapper
 
     @slow_down
@@ -92,6 +92,12 @@ class BumbleBee():
     def getPersonDoc(self, url_token: str = None) -> dict:
         url_token = url_token or self_url_token
         return self._GET(f'{root}/api/v4/members/{url_token}')
+
+    def _POST(self, url: str) -> str:
+        raise NotImplementedError
+
+    def _DELETE(self, url: str) -> str:
+        raise NotImplementedError
 
     def pins(self):
         return
