@@ -155,4 +155,4 @@ class BeeModel():
             return __dict__
 
         except AttributeError:
-            print('Object without any id cannot be loaded.')
+            print('Object without any id cannot be loaded...')

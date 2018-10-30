@@ -138,7 +138,7 @@ class MongoDBPipeline():
 
     def rm(self, arg, col=None):
         '''
-        Only supports deleting by oid for now.
+        Supports deleting by oid for now.
 
         :param oid: `bson.objectid.ObjectId`
         '''

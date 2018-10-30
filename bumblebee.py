@@ -5,7 +5,6 @@ import functools
 
 # import jfw
 import requests
-from utils import genToken, MongoDBPipeline
 from config import root, self_url_token, cookies_domain
 
 
