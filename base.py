@@ -9,6 +9,7 @@ import pickle
 import logging
 from bson.objectid import ObjectId
 
+from bumblebee import BumbleBee
 from utils.pipeline import MongoDBPipeline
 
 
@@ -22,9 +23,11 @@ logging.basicConfig(
 
 class BeeModel():
     m = MongoDBPipeline()
+    bee = BumbleBee('cookies.json')
     col = ''
     field_types = [bool, str, int, list, tuple, set, dict, bytes, ObjectId]
     __LarvaObjects = ['Larva']
+    __special_objects = []
 
     def __init__(self, doc: dict = None, **kwargs):
         if not doc:

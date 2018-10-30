@@ -73,20 +73,9 @@ class BumbleBee():
             result += resp['data']
         return result
 
-    def getFollowees(self,
-                     url_token=self_url_token,
-                     offset=0,
-                     type='latest') -> list:
-        '''
-        :param url_token: <str> Only `url_token` works in url when fetching.
-        :param offset: <int>
-        '''
-        endpoint = f'{root}/api/v4/members/{url_token}/followees'
-        if type is 'latest':
-            result = self._GET(endpoint)['data']
-        elif type is 'all':
-            result = self._GETALL(endpoint)
-        return [m['url_token'] for m in result]
+    def getPersonDoc(self, url_token: str = None) -> dict:
+        url_token = url_token or self_url_token
+        return self._GET(f'{root}/api/v4/members/{url_token}')
 
     def pins(self):
         return

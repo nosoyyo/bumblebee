@@ -21,8 +21,6 @@ import pymongo
 from bson.objectid import ObjectId
 from pymongo.collection import Collection
 
-from .exception import InvalidCollectionError
-
 
 settings = {}
 settings['MONGODB_SERVER'] = os.environ.get('LOCAL_MONGODB_SERVER')
@@ -50,7 +48,7 @@ class MongoDBPipeline():
         settings['MONGODB_SERVER'],
         settings['MONGODB_PORT'],
     )
-    db = client.get_database(settings['MONGODB_RABONA_DB'])
+    db = client.get_database(settings['MONGODB_BUMBLEBEE_DB'])
     auth = db.authenticate(
         settings['MONGODB_USERNAME'],
         settings['MONGODB_PASSWORD']
@@ -75,12 +73,12 @@ class MongoDBPipeline():
             elif isinstance(_col, str):
                 col = self.setCol(_col)
             else:
-                raise InvalidCollectionError(_col)
+                raise NotImplementedError
             return col
         except Exception as e:
             logging.error(f'dealWithCol raises {e}')
 
-    def insert(self, doc: dict, col: str=None) -> ObjectId:
+    def insert(self, doc: dict, col: str = None) -> ObjectId:
         col = self.dealWithCol(col)
         try:
             oid = col.insert_one(doc).inserted_id
@@ -112,24 +110,23 @@ class MongoDBPipeline():
             # TODO
             return col.find_one(kwargs)
 
-    def update(self, oid: ObjectId, doc: dict, col: str=None) -> bool:
+    def update(self, oid: ObjectId, doc: dict, col: str = None) -> bool:
         col = self.dealWithCol(col)
 
         try:
             result = col.update_one({'_id': oid}, {"$set": doc},)
             if result.modified_count:
                 logging.debug(f'updated {doc} in {col.name}, result[{result}]')
-                    doc, col.name, result))
-                flag=True
+                flag = True
             else:
                 if result.matched_count:
                     logging.debug(
                         f'{doc} not updated in {col.name}, input same to output.')
-                    flag=False
+                    flag = False
                 else:
                     logging.debug(
                         f'{doc} not updated in {col.name}, nothing matches input.')
-                    flag=False
+                    flag = False
 
             return flag
         except Exception as e:
@@ -142,17 +139,17 @@ class MongoDBPipeline():
 
         :param oid: `bson.objectid.ObjectId`
         '''
-        col=self.dealWithCol(col)
+        col = self.dealWithCol(col)
 
         if isinstance(arg, ObjectId):
             try:
-                result=bool(col.delete_one(
+                result = bool(col.delete_one(
                     {'_id': arg}).raw_result['n']) or False
                 logging.info(f'deleting {arg} in {col.name}, result[{result}]')
                 return result
             except Exception as e:
                 logging.error(
-                    f'm.rm raises {e} during deleting by ObjectId'
+                    f'm.rm raises {e} during deleting by ObjectId')
                 return False
         elif isinstance(arg, dict):
             try:
