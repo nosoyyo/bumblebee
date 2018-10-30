@@ -3,8 +3,9 @@ import time
 from random import random
 import functools
 
-import jfw
+# import jfw
 import requests
+from utils import genToken, MongoDBPipeline
 from config import root, self_url_token, cookies_domain
 
 
@@ -14,7 +15,7 @@ class BumbleBeeError(Exception):
 
 class BumbleBee():
 
-    print(jfw.__doc__)
+    # print(jfw.__doc__)
 
     def __init__(self, cookies_file: str):
 
@@ -44,7 +45,7 @@ class BumbleBee():
         return wrapper
 
     @slow_down
-    def _GET(self, url: str, _params: dict=None) -> dict:
+    def _GET(self, url: str, _params: dict = None) -> dict:
         '''
         :param _params: {'include':['a,b']}
         '''

@@ -26,7 +26,7 @@ class BeeModel():
     field_types = [bool, str, int, list, tuple, set, dict, bytes, ObjectId]
     __LarvaObjects = ['Larva']
 
-    def __init__(self, doc: dict=None, **kwargs):
+    def __init__(self, doc: dict = None, **kwargs):
         if not doc:
             _dict = kwargs
         elif doc:
@@ -38,7 +38,7 @@ class BeeModel():
         for i in range(len(_dict)):
             self.__setattr__(ks[i], vs[i])
 
-    def save(self, oid: ObjectId=None, col: str=None) -> bool:
+    def save(self, oid: ObjectId = None, col: str = None) -> bool:
         '''
         scene 0: init saving for new obj
         scene 1: update for existed obj
@@ -98,7 +98,7 @@ class BeeModel():
         elif access == 'read':
             return pickle.loads(obj)
 
-    def load(self, some_id=None, col: str=None) -> dict:
+    def load(self, some_id=None, col: str = None) -> dict:
         '''
 
         :param some_id: `None` not quite sure what'll be input yet
@@ -141,7 +141,8 @@ class BeeModel():
             for key in list(__dict__):
                 # if key in self.__FIFAObjects:
                     # # {doc[k].ObjecdId: doc[k].col}
-                    # __dict__[key] = self.m.ls(list(__dict__)[0], __dict__[key])
+                    # __dict__[key] = self.m.ls(list(__dict__)[0], /
+                    # __dict__[key])
                 # elif key in self.__RabonaObjects:
                     # # pickle_objs[k] = pickle.dumps(doc[k])
                     # __dict__[key] = pickle.loads(__dict__[key])
