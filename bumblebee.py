@@ -1,7 +1,8 @@
 import json
 import time
-from random import random
+import redis
 import functools
+from random import random
 
 # import jfw
 import requests
@@ -15,6 +16,10 @@ class BumbleBeeError(Exception):
 class BumbleBee():
 
     # print(jfw.__doc__)
+
+    cpool = redis.ConnectionPool(
+        host='localhost', port=6379, decode_responses=True, db=1)
+    r = redis.Redis(connection_pool=cpool)
 
     def __init__(self, cookies_file: str):
 
@@ -36,7 +41,7 @@ class BumbleBee():
         Speed control.
         '''
         @functools.wraps(func)
-        def wrapper(*args, **kw):
+        def wrapper(self, *args, **kw):
             slowness = random() + random() + random()
             time.sleep(slowness)
             print(f'idiot, slow down...{slowness:.2f}')
@@ -50,8 +55,19 @@ class BumbleBee():
         '''
         if _params is None:
             _params = {}
-        resp = requests.get(url, cookies=self.cookies,
-                            headers=self.headers, params=_params)
+
+        try:
+            attempt = time.time()
+            resp = requests.get(url, cookies=self.cookies,
+                                headers=self.headers, params=_params)
+        except Exception as e:
+            print(f'some {e} happens during _GET')
+        finally:
+            self.r.lpush('actions', attempt)
+            # record last 9999 actions timenode
+            if self.r.llen('actions') > 9999:
+                self.r.ltrim('actions', 0, 9999)
+
         if resp.status_code != requests.codes.ok:
             print("Status code:", resp.status_code, "for", url)
             raise BumbleBeeError
