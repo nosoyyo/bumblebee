@@ -10,11 +10,11 @@ def safeCheck(func):
     @functools.wraps(func)
     def wrapper(self, *args, **kw):
         # check if the 100th action is within last 5 mins
-        the_100th_action = self.bee.r.lindex('actions', 100)
-        the_1kth_action = self.bee.r.lindex('actions', 1000)
-        the_2kth_action = self.bee.r.lindex('actions', 2000)
-        if self.bee.r.llen('actions') == 9999:
-            the_10kth_action = self.bee.r.lindex('actions', -1)
+        the_100th_action = self.r.lindex('actions', 100)
+        the_1kth_action = self.r.lindex('actions', 1000)
+        the_2kth_action = self.r.lindex('actions', 2000)
+        if self.r.llen('actions') == 9999:
+            the_10kth_action = self.r.lindex('actions', -1)
         else:
             the_10kth_action = None
 
@@ -45,6 +45,6 @@ def safeCheck(func):
             print(info)
             time.sleep(nap)
         else:
-            print('safeCheck() passed. no problem. go on. \n')
+            print('safeCheck passed. no problem.')
             return func(self, *args, **kw)
     return wrapper

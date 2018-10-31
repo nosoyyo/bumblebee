@@ -6,7 +6,7 @@ from random import random
 
 # import jfw
 import requests
-from config import root, self_url_token, cookies_domain
+from config import root, self_url_token, cookies_file, cookies_domain
 
 
 class BumbleBeeError(Exception):
@@ -21,7 +21,7 @@ class BumbleBee():
         host='localhost', port=6379, decode_responses=True, db=1)
     r = redis.Redis(connection_pool=cpool)
 
-    def __init__(self, cookies_file: str):
+    def __init__(self):
 
         self.self_url_token = self_url_token
 
@@ -82,6 +82,8 @@ class BumbleBee():
 
     def _GETALL(self, url: str) -> dict:
         resp = self._GET(url)
+        count = resp['paging']['totals']
+        print(f'he is following {count} persons.')
         result = resp['data']
         while not resp['paging']['is_end']:
             offset = {'offset': int(resp['paging']['next'].split('=')[-1])}

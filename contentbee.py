@@ -6,9 +6,7 @@ from bumblebee import BumbleBee
 from config import self_url_token, root
 
 
-class ContentBee():
-
-    bee = BumbleBee('cookies.json')
+class ContentBee(BumbleBee):
 
     def sessionTokenCheck(func):
         '''
@@ -19,18 +17,22 @@ class ContentBee():
         '''
         @functools.wraps(func)
         def wrapper(self, *args, **kw):
-            if not self.bee.r.hkeys('session_token'):
+            current_token = self.r.hkeys('session_token')[0]
+            if not current_token:
                 current_token = utils.genToken()
                 token_born = time.time()
-                self.bee.r.hset('session_token', current_token, token_born)
+                self.r.hset('session_token', current_token, token_born)
+            else:
+                token_born = float(self.r.hvals('session_token')[0])
 
             if time.time() - token_born >= 7200:
+                self.r.hdel('session_token', current_token)
                 current_token = utils.genToken()
                 token_born = time.time()
-                self.bee.r.hset('session_token', current_token, token_born)
-                print('token expired. generated a new one and saved in redis.')
+                self.r.hset('session_token', current_token, token_born)
+                print('token expired. generated a new one & saved in redis.')
             else:
-                print('sessionTokenCheck passed. no problem. \n')
+                print('sessionTokenCheck passed. no problem.')
 
             return func(self, token=current_token, *args, **kw)
         return wrapper
@@ -42,8 +44,9 @@ class ContentBee():
         return a list of answer dicts.
 
         :param token: Session token. `session_token`
+        :param q: nums of items per fetch (NotImplemented)
         '''
         endpoint = f'{root}/api/v3/feed/topstory/recommend'
         _params = {'session_token': token, 'desktop': 'true', 'action': 'down'}
-        resp = self.bee._GET(endpoint, _params=_params)
+        resp = self._GET(endpoint, _params=_params)
         return resp['data']
