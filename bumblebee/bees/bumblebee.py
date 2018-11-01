@@ -91,15 +91,31 @@ class BumbleBee():
             result += resp['data']
         return result
 
+    @slow_down
+    def _POST(self, url: str) -> str:
+        raise NotImplementedError
+
+    @slow_down
+    def _DELETE(self, url: str) -> str:
+        raise NotImplementedError
+
     def getPersonDoc(self, url_token: str = None) -> dict:
         url_token = url_token or self_url_token
         return self._GET(f'{root}/api/v4/members/{url_token}')
 
-    def _POST(self, url: str) -> str:
-        raise NotImplementedError
+    def poachThank(self, url: str) -> bool:
+        '''
+        '''
+        def dealResp(text: str):
+            if text == 'true':
+                return True
+            elif text == 'false':
+                return False
+            else:
+                raise NotImplementedError
 
-    def _DELETE(self, url: str) -> str:
-        raise NotImplementedError
+        resp = self._GET(url)
+        return dealResp(resp['is_thanked'])
 
     def pins(self):
         return

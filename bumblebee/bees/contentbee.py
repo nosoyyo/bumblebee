@@ -2,7 +2,7 @@ import time
 import functools
 
 import utils
-from bumblebee import BumbleBee
+from .bumblebee import BumbleBee
 from config import self_url_token, root
 
 
