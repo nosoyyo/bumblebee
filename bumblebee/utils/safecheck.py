@@ -3,6 +3,19 @@ import functools
 from random import random
 
 
+def slowDown(func):
+    '''
+    Speed control.
+    '''
+    @functools.wraps(func)
+    def wrapper(self, *args, **kw):
+        slowness = random() + random() + random()
+        time.sleep(slowness)
+        print(f'idiot, slow down...{slowness:.2f}')
+        return func(self, *args, **kw)
+    return wrapper
+
+
 def safeCheck(func):
     '''
     Global actions limit.

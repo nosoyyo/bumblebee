@@ -1,16 +1,19 @@
 import json
 import time
 import redis
-import functools
-from random import random
 
 # import jfw
+import utils
 import requests
 from config import root, self_url_token, cookies_file, cookies_domain
 
 
 class BumbleBeeError(Exception):
-    pass
+    def __init__(self, err_code=None):
+        if not err_code:
+            print('no err_code')
+        else:
+            print(f'Error: {err_code}')
 
 
 class BumbleBee():
@@ -30,25 +33,14 @@ class BumbleBee():
         self.cookies = {item['name']: item['value']
                         for item in cookies if item['domain']
                         == cookies_domain}
+        # TODO
         self.headers = {
             'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_0) \
             AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 \
             Safari/537.36',
             'referer': f'{root}/people/{self_url_token}/following'}
 
-    def slow_down(func):
-        '''
-        Speed control.
-        '''
-        @functools.wraps(func)
-        def wrapper(self, *args, **kw):
-            slowness = random() + random() + random()
-            time.sleep(slowness)
-            print(f'idiot, slow down...{slowness:.2f}')
-            return func(self, *args, **kw)
-        return wrapper
-
-    @slow_down
+    @utils.slowDown
     def _GET(self, url: str, _params: dict = None) -> dict:
         '''
         :param _params: {'include':['a,b']}
@@ -57,20 +49,17 @@ class BumbleBee():
             _params = {}
 
         try:
-            attempt = time.time()
+            occur = time.time()
             resp = requests.get(url, cookies=self.cookies,
                                 headers=self.headers, params=_params)
         except Exception as e:
             print(f'some {e} happens during _GET')
         finally:
-            self.r.lpush('actions', attempt)
-            # record last 9999 actions timenode
-            if self.r.llen('actions') > 9999:
-                self.r.ltrim('actions', 0, 9999)
+            utils.sigmaActions(self.r, occur)
 
         if resp.status_code != requests.codes.ok:
             print("Status code:", resp.status_code, "for", url)
-            raise BumbleBeeError
+            raise BumbleBeeError(101)
         else:
             try:
                 result = json.loads(resp.text)
@@ -78,12 +67,13 @@ class BumbleBee():
                 return result
             except json.JSONDecodeError:
                 print('Cannot decode JSON for', url)
-                raise BumbleBeeError
+                raise BumbleBeeError(102)
 
     def _GETALL(self, url: str) -> dict:
         resp = self._GET(url)
-        count = resp['paging']['totals']
-        print(f'he is following {count} persons.')
+        if resp['paging']:
+            count = resp['paging']['totals']
+            print(f'totals: {count}')
         result = resp['data']
         while not resp['paging']['is_end']:
             offset = {'offset': int(resp['paging']['next'].split('=')[-1])}
@@ -91,11 +81,36 @@ class BumbleBee():
             result += resp['data']
         return result
 
-    @slow_down
-    def _POST(self, url: str) -> str:
-        raise NotImplementedError
+    @utils.slowDown
+    def _POST(self, url: str, _params: dict = None) -> dict:
+        '''
+        :param _params: {'include':['a,b']}
+        '''
+        if _params is None:
+            _params = {}
 
-    @slow_down
+        try:
+            occur = time.time()
+            resp = requests.post(url, cookies=self.cookies,
+                                 headers=utils.pins_headers, params=_params)
+        except Exception as e:
+            print(f'some {e} happens during _GET')
+        finally:
+            utils.sigmaActions(self.r, occur)
+
+        if resp.status_code != requests.codes.ok:
+            print("Status code:", resp.status_code, "for", url)
+            raise BumbleBeeError(103)
+        else:
+            try:
+                result = json.loads(resp.text)
+                print('1 result grabbed.')
+                return result
+            except json.JSONDecodeError:
+                print('Cannot decode JSON for', url)
+                raise BumbleBeeError(104)
+
+    @utils.slowDown
     def _DELETE(self, url: str) -> str:
         raise NotImplementedError
 
@@ -103,19 +118,25 @@ class BumbleBee():
         url_token = url_token or self_url_token
         return self._GET(f'{root}/api/v4/members/{url_token}')
 
-    def poachThank(self, url: str) -> bool:
+    def poachThank(self, _id: str) -> bool:
         '''
         '''
+        endpoint = f'{root}/api/v4/answers/{_id}/thankers'
+
         def dealResp(text: str):
             if text == 'true':
                 return True
             elif text == 'false':
                 return False
             else:
-                raise NotImplementedError
+                raise BumbleBeeError(105)
 
-        resp = self._GET(url)
+        resp = self._POST(endpoint)
         return dealResp(resp['is_thanked'])
 
-    def pins(self):
+    def postPins(self, text):
+        endpoint = f'{root}/api/v4/pins'
+        content = [{"type": "text", "content": f'<p> {text} </p>'}]
+        _params = {'content': content, 'version': 1, 'source_pin_id': 0}
+        resp = self._POST(endpoint, _params=_params)
         return

@@ -4,9 +4,7 @@ from config import root
 
 class WorkingBee(ContentBee):
 
-    def someThanks(self):
-
-        endpoint = f'{root}/api/v4/answers/{_id}/thankers'
+    def someThanks(self, url_token):
 
         feed = self.grabRecFeed()
         for f in feed:
