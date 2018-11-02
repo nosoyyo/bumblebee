@@ -39,7 +39,7 @@ class Question(BeeModel):
             self.has_doc = False
             self.aloha(question_id)
         else:
-            raise BumbleBeeQuestionError(201)
+            raise BumbleBeeQuestionError(4001)
 
     def __repr__(self):
         return 'Question'

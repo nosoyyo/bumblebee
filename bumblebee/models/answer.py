@@ -35,7 +35,7 @@ class Answer(BeeModel):
         elif answer_id:
             self.aloha(answer_id)
         else:
-            raise BumbleBeeAnswerError(201)
+            raise BumbleBeeAnswerError(3001)
 
     def __repr__(self):
         return 'Answer'
@@ -53,7 +53,7 @@ class Answer(BeeModel):
                 self.save()
                 logging.info(f'answer {self.id} saved.')
             else:
-                raise BumbleBeeAnswerError(202)
+                raise BumbleBeeAnswerError(3002)
         else:
             retrieval = self.load(answer_id)
             self.__dict__ = retrieval

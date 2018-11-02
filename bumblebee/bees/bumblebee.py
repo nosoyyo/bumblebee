@@ -51,14 +51,14 @@ class BumbleBee():
             utils.sigmaActions(self.r, occur)
 
         if resp.status_code != requests.codes.ok:
-            raise BumbleBeeError(101)
+            raise BumbleBeeError(1001)
         else:
             try:
                 result = json.loads(resp.text)
                 print('1 result grabbed.')
                 return result
             except json.JSONDecodeError:
-                raise BumbleBeeError(102)
+                raise BumbleBeeError(1002)
 
     def _GETALL(self, url: str) -> dict:
         resp = self._GET(url)
@@ -84,7 +84,7 @@ class BumbleBee():
             resp = requests.post(url, cookies=self.cookies,
                                  headers=self.headers, params=_params)
         except Exception as e:
-            raise BumbleBeeError(103)
+            raise BumbleBeeError(1003)
         finally:
             utils.sigmaActions(self.r, time.time())
 
@@ -94,7 +94,7 @@ class BumbleBee():
             return result
         except json.JSONDecodeError:
             print('Cannot decode JSON for', url)
-            raise BumbleBeeError(104)
+            raise BumbleBeeError(1004)
 
     @utils.slowDown
     def _DELETE(self, url: str) -> str:
