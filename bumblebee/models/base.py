@@ -9,7 +9,6 @@ import pickle
 import logging
 from bson.objectid import ObjectId
 
-from bees import BumbleBee
 from utils.pipeline import MongoDBPipeline
 
 
@@ -23,7 +22,6 @@ logging.basicConfig(
 
 class BeeModel():
     m = MongoDBPipeline()
-    bee = BumbleBee()
     col = ''
     field_types = [bool, str, int, list, tuple, set, dict, bytes, ObjectId]
     __LarvaObjects = ['Question', 'Answer', 'Person']

@@ -1,7 +1,6 @@
 import logging
 
 from .base import BeeModel
-from bees import BumbleBee
 from config import self_url_token
 
 
@@ -18,7 +17,6 @@ class Person(BeeModel):
 
     '''
 
-    bee = BumbleBee()
     col = 'persons'
     key_objs = []
 
@@ -53,7 +51,5 @@ class Person(BeeModel):
             if self.has_doc:
                 self.save()
             else:
-                doc = self.bee.getPersonDoc(url_token)
-                self.__dict__ = doc
-                self.save()
-            logging.info(f'new person {self.name} saved.')
+                # TODO: grab person doc then save then log
+                raise NotImplementedError

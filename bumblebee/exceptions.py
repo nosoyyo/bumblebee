@@ -1,10 +1,10 @@
 class BumbleBeeError(Exception):
 
     errmsgs = {
-        101: '_GET: resp not ok.',
-        102: '_GET: cannot decode JSON.',
-        103: '_POST: resp not ok.',
-        104: '_POST: cannot decode JSON.'
+        1001: '_GET: resp not ok.',
+        1002: '_GET: cannot decode JSON.',
+        1003: '_POST: resp not ok.',
+        1004: '_POST: cannot decode JSON.'
     }
 
     def __init__(self, err_code=None):
@@ -15,8 +15,20 @@ class BumbleBeeError(Exception):
             print(f'Error: {msg}')
 
 
+class BumbleBeePersonError(BumbleBeeError):
+    errmsgs = {
+        2001: 'Nothing here yet',
+    }
+
+
 class BumbleBeeAnswerError(BumbleBeeError):
     errmsgs = {
-        201: 'Answer.__init__: must contain "answer_id" or "doc"',
-        202: 'Answer.aloha: this id is not in MongoDB',
+        3001: 'Answer.__init__: must contain "answer_id" or "doc"',
+        3002: 'Answer.aloha: this id is not in MongoDB',
+    }
+
+
+class BumbleBeeQuestionError(BumbleBeeError):
+    errmsgs = {
+        4001: 'Nothing here yet',
     }

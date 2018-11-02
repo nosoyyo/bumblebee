@@ -5,6 +5,8 @@ from .contentbee import ContentBee
 class WorkingBee(ContentBee):
     '''
     Daily routines.
+
+    0. do some basicThanks
     '''
 
     def basicThanks(self, url_token=None):
