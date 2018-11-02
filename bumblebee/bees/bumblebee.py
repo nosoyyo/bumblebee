@@ -5,15 +5,8 @@ import redis
 # import jfw
 import utils
 import requests
+from exceptions import BumbleBeeError
 from config import root, self_url_token, cookies_file, cookies_domain
-
-
-class BumbleBeeError(Exception):
-    def __init__(self, err_code=None):
-        if not err_code:
-            print('no err_code')
-        else:
-            print(f'Error: {err_code}')
 
 
 class BumbleBee():
@@ -38,7 +31,7 @@ class BumbleBee():
             'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_0) \
             AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 \
             Safari/537.36',
-            'referer': f'{root}/people/{self_url_token}/following'}
+            'referer': f'{root}/people/{self_url_token}'}
 
     @utils.slowDown
     def _GET(self, url: str, _params: dict = None) -> dict:
@@ -58,7 +51,6 @@ class BumbleBee():
             utils.sigmaActions(self.r, occur)
 
         if resp.status_code != requests.codes.ok:
-            print("Status code:", resp.status_code, "for", url)
             raise BumbleBeeError(101)
         else:
             try:
@@ -66,7 +58,6 @@ class BumbleBee():
                 print('1 result grabbed.')
                 return result
             except json.JSONDecodeError:
-                print('Cannot decode JSON for', url)
                 raise BumbleBeeError(102)
 
     def _GETALL(self, url: str) -> dict:
@@ -90,25 +81,20 @@ class BumbleBee():
             _params = {}
 
         try:
-            occur = time.time()
             resp = requests.post(url, cookies=self.cookies,
-                                 headers=utils.pins_headers, params=_params)
+                                 headers=self.headers, params=_params)
         except Exception as e:
-            print(f'some {e} happens during _GET')
-        finally:
-            utils.sigmaActions(self.r, occur)
-
-        if resp.status_code != requests.codes.ok:
-            print("Status code:", resp.status_code, "for", url)
             raise BumbleBeeError(103)
-        else:
-            try:
-                result = json.loads(resp.text)
-                print('1 result grabbed.')
-                return result
-            except json.JSONDecodeError:
-                print('Cannot decode JSON for', url)
-                raise BumbleBeeError(104)
+        finally:
+            utils.sigmaActions(self.r, time.time())
+
+        try:
+            result = json.loads(resp.text)
+            print('1 result grabbed.')
+            return result
+        except json.JSONDecodeError:
+            print('Cannot decode JSON for', url)
+            raise BumbleBeeError(104)
 
     @utils.slowDown
     def _DELETE(self, url: str) -> str:
@@ -118,25 +104,21 @@ class BumbleBee():
         url_token = url_token or self_url_token
         return self._GET(f'{root}/api/v4/members/{url_token}')
 
-    def poachThank(self, _id: str) -> bool:
+    def poachThank(self, a) -> bool:
         '''
+        Accepting only `Answer` object.
         '''
-        endpoint = f'{root}/api/v4/answers/{_id}/thankers'
-
-        def dealResp(text: str):
-            if text == 'true':
-                return True
-            elif text == 'false':
-                return False
-            else:
-                raise BumbleBeeError(105)
-
+        endpoint = f'{root}/api/v4/answers/{a.id}/thankers'
         resp = self._POST(endpoint)
-        return dealResp(resp['is_thanked'])
+        print(f"thanked {a.author.name}'s answer on {a.question['title']}")
+        sigma = self.r.hincrby('sigma_thanked', a.id)
+        print(f'{a.author.name} has been thanked for {sigma} times.')
+        return resp['is_thanked']
 
+    # TODO
     def postPins(self, text):
         endpoint = f'{root}/api/v4/pins'
         content = [{"type": "text", "content": f'<p> {text} </p>'}]
-        _params = {'content': content, 'version': 1, 'source_pin_id': 0}
-        resp = self._POST(endpoint, _params=_params)
-        return
+        _data = {'content': content, 'version': 1, 'source_pin_id': 0}
+        resp = self._POST(endpoint, data=_data)
+        return resp

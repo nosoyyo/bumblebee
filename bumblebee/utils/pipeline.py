@@ -92,7 +92,7 @@ class MongoDBPipeline():
         col = self.dealWithCol(col)
 
         if arg is None:
-            return self.db.collection_names()
+            return self.db.list_collection_names()
         elif isinstance(arg, str):
             col = self.dealWithCol(arg)
             return [item for item in col.find()]

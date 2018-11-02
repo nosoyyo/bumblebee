@@ -9,7 +9,7 @@ import pickle
 import logging
 from bson.objectid import ObjectId
 
-from bumblebee import BumbleBee
+from bees import BumbleBee
 from utils.pipeline import MongoDBPipeline
 
 
@@ -23,10 +23,10 @@ logging.basicConfig(
 
 class BeeModel():
     m = MongoDBPipeline()
-    bee = BumbleBee('cookies.json')
+    bee = BumbleBee()
     col = ''
     field_types = [bool, str, int, list, tuple, set, dict, bytes, ObjectId]
-    __LarvaObjects = ['Larva']
+    __LarvaObjects = ['Question', 'Answer', 'Person']
     __special_objects = []
 
     def __init__(self, doc: dict = None, **kwargs):
@@ -67,8 +67,8 @@ class BeeModel():
                 # pickle_objs[k] = pickle.dumps(doc[k])
             # elif v.__repr__() in self.__FIFAObjects:
                 # pickle_objs[k] = {doc[k].ObjecdId: doc[k].col}
-            if v.__repr__() in self.__LarvaObjects:
-                raise NotImplementedError
+            if doc[k].__repr__() in self.__LarvaObjects:
+                pickle_objs[k] = pickle.dumps(doc[k])
             elif k in self.__special_objects:
                 pickle_objs[k] = pickle.dumps(doc[k])
         for k, v in pickle_objs.items():
@@ -81,16 +81,16 @@ class BeeModel():
                 oid = oid
             result = self.m.update(oid, doc, col)
 
-            logging.debug('doc {} updated in {}'.format(doc, col))
+            logging.debug(f'doc {doc} updated in {col}')
             return result
         else:
-            logging.debug('input doc is: {}'.format(doc))
+            logging.debug(f'input doc is: {doc}')
             if 'ObjectId' not in doc.keys() and doc != self.m.ls(doc, col):
                 result = self.m.insert(doc, col) or False
-                logging.debug('get result: {}'.format(result))
+                logging.debug(f'get result: {result}')
                 if isinstance(result, ObjectId):
                     self.ObjectId = result
-                    logging.debug('doc {} inserted in {}'.format(doc, col))
+                    logging.debug(f'doc {doc} inserted in {col}')
                 return bool(result)
             else:
                 return False
@@ -123,12 +123,16 @@ class BeeModel():
             elif isinstance(some_id, ObjectId):
                 query_key = '_id'
                 query_value = some_id
-            elif str(some_id).isdigit():
-                query_key = 'tele_id'
+            elif len(some_id) == 32:
+                query_key = 'id'
                 query_value = some_id
+            else:
+                query_key = None
+                query_value = None
+                raise NotImplementedError
 
-            logging.debug('querying key: "{}" & value: "{}"'.format(
-                query_key, query_value))
+            # logging.debug(
+            #    f'querying key: "{query_key}" & value: "{query_value}"')
             retrieval = self.m.ls({query_key: query_value}, col)
 
             if isinstance(retrieval, list):

@@ -1,12 +1,18 @@
+from models.answer import Answer
 from .contentbee import ContentBee
-from config import root
 
 
 class WorkingBee(ContentBee):
+    '''
+    Daily routines.
+    '''
 
-    def someThanks(self, url_token):
-
+    def basicThanks(self, url_token=None):
+        '''
+        Grab answers from feed, thank them.
+        # TODO: thank a certain person for several times.
+        '''
         feed = self.grabRecFeed()
         for f in feed:
-            _id = f['id'].split('.')[0].split('_')[-1]
-            self.poachThank(_id)
+            a = Answer(doc=f['target'])
+            self.poachThank(a.id)
