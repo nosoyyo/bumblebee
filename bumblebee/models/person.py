@@ -37,7 +37,11 @@ class Person(BeeModel):
     def aloha(self, url_token):
         query = {'url_token': self.url_token}
         has_stored = bool(self.m.ls(query, 'persons'))
-        print(f'person has been stored: {has_stored}')
+        if self.has_doc:
+            log_name = self.name
+        else:
+            log_name = url_token
+        print(f'person {log_name} has been stored: {has_stored}')
 
         if has_stored and not self.has_doc:
             retrieval = self.load()

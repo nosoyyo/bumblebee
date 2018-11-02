@@ -26,7 +26,7 @@ class BumbleBee():
         self.cookies = {item['name']: item['value']
                         for item in cookies if item['domain']
                         == cookies_domain}
-        # TODO
+        # TODO random header items & newest Chrome version
         self.headers = {
             'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_0) \
             AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 \
@@ -55,7 +55,7 @@ class BumbleBee():
         else:
             try:
                 result = json.loads(resp.text)
-                print('1 result grabbed.')
+                print(f'stuff grabbed from {url}.')
                 return result
             except json.JSONDecodeError:
                 raise BumbleBeeError(1002)
@@ -90,7 +90,7 @@ class BumbleBee():
 
         try:
             result = json.loads(resp.text)
-            print('1 result grabbed.')
+            print(f'stuff posted to {url}')
             return result
         except json.JSONDecodeError:
             print('Cannot decode JSON for', url)
@@ -110,7 +110,7 @@ class BumbleBee():
         '''
         endpoint = f'{root}/api/v4/answers/{a.id}/thankers'
         resp = self._POST(endpoint)
-        print(f"thanked {a.author.name}'s answer on {a.question['title']}")
+        print(f"thanked {a.author.name}'s answer on {a.question.title}")
         sigma = self.r.hincrby('sigma_thanked', a.id)
         print(f'{a.author.name} has been thanked for {sigma} times.')
         return resp['is_thanked']

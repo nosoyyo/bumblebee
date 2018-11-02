@@ -46,7 +46,7 @@ class Answer(BeeModel):
         '''
         query = {'id': answer_id}
         has_stored = bool(self.m.ls(query, self.col))
-        print(f'answer has been stored: {has_stored}')
+        print(f'answer {answer_id} has been stored: {has_stored}')
 
         if not has_stored:
             if self.id:
