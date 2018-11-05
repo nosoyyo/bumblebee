@@ -1,7 +1,8 @@
 # User Custom
 
+cookies/
+*.json
 config.py
-cookies.json
 .vscode
 .DS_Store
 
