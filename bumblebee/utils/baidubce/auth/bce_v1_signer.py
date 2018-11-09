@@ -18,8 +18,8 @@ import hashlib
 import hmac
 import logging
 
-from baidubce.http import http_headers
-from baidubce import utils
+from utils.baidubce.http import http_headers
+from utils.baidubce import utils
 
 
 _logger = logging.getLogger(__name__)

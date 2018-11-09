@@ -14,8 +14,8 @@
 This module provides a general response class for BCE services.
 """
 
-from baidubce import utils
-from baidubce.http import http_headers
+from utils.baidubce import utils
+from utils.baidubce.http import http_headers
 
 
 class BceResponse(object):

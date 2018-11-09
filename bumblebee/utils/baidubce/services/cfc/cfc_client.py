@@ -18,25 +18,25 @@ API Reference: https://cloud.baidu.com/doc/CFC/index.html
 import copy
 import json
 import logging
-import baidubce
+import utils.baidubce
 import sys
 import time
 import traceback
 import re
 
 from urllib.parse import quote
-from baidubce import bce_base_client
-from baidubce import utils
-from baidubce.auth import bce_v1_signer
-from baidubce.http import bce_http_client
-from baidubce.http import handler
-from baidubce.http import http_content_types
-from baidubce.http import http_headers
-from baidubce.http import http_methods
-from baidubce.services.cfc import cfc_handler
-from baidubce.exception import BceClientError
-from baidubce.exception import BceServerError
-from baidubce.utils import required
+from utils.baidubce import bce_base_client
+from utils.baidubce import utils
+from utils.baidubce.auth import bce_v1_signer
+from utils.baidubce.http import bce_http_client
+from utils.baidubce.http import handler
+from utils.baidubce.http import http_content_types
+from utils.baidubce.http import http_headers
+from utils.baidubce.http import http_methods
+from utils.baidubce.services.cfc import cfc_handler
+from utils.baidubce.exception import BceClientError
+from utils.baidubce.exception import BceServerError
+from utils.baidubce.utils import required
 
 _logger = logging.getLogger(__name__)
 
@@ -721,13 +721,13 @@ class CfcClient(bce_base_client.BceBaseClient):
                       http_method, path, headers, params, body, t)
         headers = headers or {}
         user_agent = 'bce-sdk-python/%s/%s/%s' % (
-            baidubce.SDK_VERSION, sys.version, sys.platform)
+            utils.baidubce.SDK_VERSION, sys.version, sys.platform)
         user_agent = user_agent.replace('\n', '')
         headers[http_headers.USER_AGENT] = user_agent
         should_get_new_date = False
         headers[http_headers.HOST] = config.endpoint
         if isinstance(body, str):
-            body = body.encode(baidubce.DEFAULT_ENCODING)
+            body = body.encode(utils.baidubce.DEFAULT_ENCODING)
         if not body:
             headers[http_headers.CONTENT_LENGTH] = 0
         elif isinstance(body, str):

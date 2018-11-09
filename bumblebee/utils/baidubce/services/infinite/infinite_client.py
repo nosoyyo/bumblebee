@@ -22,21 +22,21 @@ import copy
 import logging
 import warnings
 
-import baidubce
-from baidubce import utils
-from baidubce.auth import bce_v1_signer
-from baidubce.bce_base_client import BceBaseClient
-from baidubce.http import bce_http_client
-from baidubce.http import handler
-from baidubce.http import http_headers
-from baidubce.http import http_content_types
-from baidubce.http import http_methods
-from baidubce.utils import required
-from baidubce.services import infinite
+import utils.baidubce
+from utils.baidubce import utils
+from utils.baidubce.auth import bce_v1_signer
+from utils.baidubce.bce_base_client import BceBaseClient
+from utils.baidubce.http import bce_http_client
+from utils.baidubce.http import handler
+from utils.baidubce.http import http_headers
+from utils.baidubce.http import http_content_types
+from utils.baidubce.http import http_methods
+from utils.baidubce.utils import required
+from utils.baidubce.services import infinite
 import http.client
-from baidubce.exception import BceClientError
-from baidubce.exception import BceServerError
-from baidubce.bce_client_configuration import BceClientConfiguration
+from utils.baidubce.exception import BceClientError
+from utils.baidubce.exception import BceServerError
+from utils.baidubce.bce_client_configuration import BceClientConfiguration
 import uuid
 
 _logger = logging.getLogger(__name__)
@@ -94,7 +94,7 @@ class InfiniteClient(BceBaseClient):
             params['variant'] = variant_name
         params['action'] = 'predict'
 
-        default_encoding = baidubce.DEFAULT_ENCODING
+        default_encoding = utils.baidubce.DEFAULT_ENCODING
         content_type = content_type + '; charset=' + default_encoding
         headers = {
             http_headers.CONTENT_TYPE: content_type,
@@ -140,7 +140,7 @@ class InfiniteClient(BceBaseClient):
             params['variant'] = variant_name
         params['action'] = 'debug'
         
-        default_encoding = baidubce.DEFAULT_ENCODING
+        default_encoding = utils.baidubce.DEFAULT_ENCODING
         content_type = content_type + '; charset=' + default_encoding
         headers = {
             http_headers.CONTENT_TYPE: content_type,

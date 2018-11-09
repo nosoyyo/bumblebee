@@ -18,15 +18,15 @@ import copy
 import logging
 import json
 
-import baidubce
-from baidubce.auth import bce_v1_signer
-from baidubce import bce_base_client
-from baidubce.http import bce_http_client
-from baidubce.http import handler
-from baidubce.http import http_content_types
-from baidubce.http import http_headers
-from baidubce.http import http_methods
-from baidubce.utils import required
+import utils.baidubce
+from utils.baidubce.auth import bce_v1_signer
+from utils.baidubce import bce_base_client
+from utils.baidubce.http import bce_http_client
+from utils.baidubce.http import handler
+from utils.baidubce.http import http_content_types
+from utils.baidubce.http import http_headers
+from utils.baidubce.http import http_methods
+from utils.baidubce.utils import required
 
 
 _logger = logging.getLogger(__name__)

@@ -14,7 +14,7 @@
 This module defines exceptions for BCE.
 """
 
-from baidubce import utils
+from utils.baidubce import utils
 
 
 class BceError(Exception):

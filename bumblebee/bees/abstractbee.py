@@ -46,15 +46,22 @@ class AbstractBee():
         finally:
             utils.sigmaActions(self.r, occur)
 
-        if resp.status_code != requests.codes.ok:
-            raise BumbleBeeError(1001)
-        else:
-            try:
-                result = json.loads(resp.text)
-                print(f'stuff grabbed from {url}.')
-                return result
-            except json.JSONDecodeError:
-                raise BumbleBeeError(1002)
+        return resp
+
+    @utils.slowDown
+    def _XGET(self, url: str, _params: dict = None) -> dict:
+        '''
+        :param _params: {'include':['a,b']}
+        '''
+
+        resp = self._GET(url, _params=_params)
+
+        try:
+            result = json.loads(resp.text)
+            print(f'stuff grabbed from {url}.')
+            return result
+        except json.JSONDecodeError:
+            raise BumbleBeeError(1002)
 
     @utils.slowDown
     def _POST(self, url: str, headers=None, _params: dict = None):

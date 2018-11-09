@@ -23,8 +23,8 @@ import string
 import urllib.parse
 from Crypto.Cipher import AES
 
-import baidubce
-from baidubce.http import http_headers
+import utils.baidubce
+from utils.baidubce.http import http_headers
 
 
 def get_md5_from_fp(fp, offset=0, length=-1, buf_size=8192):
@@ -443,12 +443,12 @@ def parse_host_port(endpoint, default_protocol):
     except Exception as e:
         raise ValueError('Invalid endpoint:%s, error:%s' % (endpoint, e.message))
 
-    if parse_result.scheme == baidubce.protocol.HTTP.name:
-        protocol = baidubce.protocol.HTTP
-        port = baidubce.protocol.HTTP.default_port
-    elif parse_result.scheme == baidubce.protocol.HTTPS.name:
-        protocol = baidubce.protocol.HTTPS
-        port = baidubce.protocol.HTTPS.default_port
+    if parse_result.scheme == utils.baidubce.protocol.HTTP.name:
+        protocol = utils.baidubce.protocol.HTTP
+        port = utils.baidubce.protocol.HTTP.default_port
+    elif parse_result.scheme == utils.baidubce.protocol.HTTPS.name:
+        protocol = utils.baidubce.protocol.HTTPS
+        port = utils.baidubce.protocol.HTTPS.default_port
     else:
         raise ValueError('Unsupported protocol %s' % parse_result.scheme)
     host = parse_result.hostname

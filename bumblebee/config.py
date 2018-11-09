@@ -12,33 +12,12 @@ class Headers():
             Safari/537.36', }
 
 
-class Zhihu(Headers):
-
-    cookies_file = 'cookies/zhihu.json'
-    cookies_domain = '.zhihu.com'
-    root = 'https://www.zhihu.com'
-    # get this by get self info
-    # url_token = 'self_url_token'
-    endpoints = {}
-
-    def build(self, cookies_file):
-
-        self.headers['referer'] = {
-            'referer': f'{self.root}/people/{self.url_token}'}
-
-        self.endpoints['postPins'] = f'{self.root}/api/v4/pins'
-        self.endpoints['getFolloweeList'] = f'{self.root}/api/v4/members/\
-                                       {self.url_token}/followees'
-        self.endpoints['grabRecFeed'] = f'{self.root}/api/v3/feed/topstory\
-                                        /recommend'
-
-
 class Bilibili(Headers):
 
     cookies_file = 'cookies/bilibili.json'
     cookies_domain = '.bilibili.com'
     member = 'https://member.bilibili.com/'
-    default_dir = '~/bilibee/cchan'
+    default_dir = 'bilibee/cchan'
 
     preupload_params = {'os': 'bos',
                         'bucket': 'bvcupcdnbosxg',
@@ -47,6 +26,9 @@ class Bilibili(Headers):
                         'ssl': 0}
 
     def __init__(self):
+
+        # weird...
+        self.headers = self.headers.copy()
 
         self.headers['referer'] = f'{self.member}video/upload.html'
         self.headers['x-requested-with'] = 'XMLHttpRequest'
@@ -58,7 +40,63 @@ class Bilibili(Headers):
         self.endpoints['postPO'] = 'https://upos-hz-upcdnws.acgvideo.com/ugc/'
 
 
+class CChan(Headers):
+
+    cookies_domain = '.cchan.tv'
+    cookies_file = 'cookies/cchan.json'
+    default_dir = 'bilibee/cchan'
+    root = 'https://www.cchan.tv'
+
+    good_cats = {
+        'fashion',
+        'nail',
+        'make',
+        'hair',
+        'sweets',
+    }
+
+    def __init__(self):
+        # weird...
+        self.headers = self.headers.copy()
+
+        self.endpoints = {}
+        self.endpoints['ranking'] = f'{self.root}/ranking/'
+        self.endpoints['watch'] = f'{self.root}/watch/'
+        self.endpoints['video_file'] = 'https://ccs3.akamaized.net/cchanclips/'
+
+
 class Instagram(Headers):
     cookies_file = ''
     cookies_domain = ''
     root = ''
+
+
+class Zhihu(Headers):
+
+    cookies_file = 'cookies/zhihu.json'
+    cookies_domain = '.zhihu.com'
+    root = 'https://www.zhihu.com'
+    # get this by get self info
+    # url_token = 'self_url_token'
+    endpoints = {}
+
+    def __init__(self):
+
+        self.url_token = self._getSelfURLToken()
+
+        # weird...
+        self.headers = self.headers.copy()
+        self.headers['referer'] = {
+            'referer': f'{self.root}/people/{self.url_token}'}
+
+        self.endpoints['postPins'] = f'{self.root}/api/v4/pins'
+        self.endpoints['getFolloweeList'] = f'{self.root}/api/v4/members/\
+                                       {self.url_token}/followees'
+        self.endpoints['grabRecFeed'] = f'{self.root}/api/v3/feed/topstory\
+                                        /recommend'
+
+    # TODO
+
+    def _getSelfURLToken(self):
+        import requests
+        return ''

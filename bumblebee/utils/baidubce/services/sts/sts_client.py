@@ -22,21 +22,21 @@ import json
 import logging
 import shutil
 
-import baidubce
-from baidubce import bce_client_configuration
-from baidubce import utils
-from baidubce.auth import bce_v1_signer
-from baidubce.bce_base_client import BceBaseClient
-from baidubce.exception import BceClientError
-from baidubce.exception import BceServerError
-from baidubce.exception import BceHttpClientError
-from baidubce.http import bce_http_client
-from baidubce.http import handler
-from baidubce.http import http_content_types
-from baidubce.http import http_headers
-from baidubce.http import http_methods
-from baidubce.services import sts
-from baidubce.utils import required
+import utils.baidubce
+from utils.baidubce import bce_client_configuration
+from utils.baidubce import utils
+from utils.baidubce.auth import bce_v1_signer
+from utils.baidubce.bce_base_client import BceBaseClient
+from utils.baidubce.exception import BceClientError
+from utils.baidubce.exception import BceServerError
+from utils.baidubce.exception import BceHttpClientError
+from utils.baidubce.http import bce_http_client
+from utils.baidubce.http import handler
+from utils.baidubce.http import http_content_types
+from utils.baidubce.http import http_headers
+from utils.baidubce.http import http_methods
+from utils.baidubce.services import sts
+from utils.baidubce.utils import required
 
 
 _logger = logging.getLogger(__name__)

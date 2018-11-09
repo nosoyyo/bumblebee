@@ -16,10 +16,10 @@ This module provides general http handler functions for processing http response
 
 import http.client
 import json
-from baidubce import utils
-from baidubce.exception import BceClientError
-from baidubce.exception import BceServerError
-from baidubce.utils import Expando
+from utils.baidubce import utils
+from utils.baidubce.exception import BceClientError
+from utils.baidubce.exception import BceServerError
+from utils.baidubce.utils import Expando
 
 def parse_json(http_response, response):
     """If the body is not empty, convert it to a python object and set as the value of

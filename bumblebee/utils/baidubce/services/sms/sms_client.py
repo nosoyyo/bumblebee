@@ -23,18 +23,18 @@ import logging
 import json
 import warnings
 
-from baidubce import utils
-from baidubce.auth import bce_v1_signer
-from baidubce.bce_base_client import BceBaseClient
-from baidubce.http import bce_http_client
-from baidubce.http import http_headers
-from baidubce.http import http_methods
-from baidubce.utils import required
-from baidubce.services import sms
+from utils.baidubce import utils
+from utils.baidubce.auth import bce_v1_signer
+from utils.baidubce.bce_base_client import BceBaseClient
+from utils.baidubce.http import bce_http_client
+from utils.baidubce.http import http_headers
+from utils.baidubce.http import http_methods
+from utils.baidubce.utils import required
+from utils.baidubce.services import sms
 import http.client
-from baidubce.exception import BceClientError
-from baidubce.exception import BceServerError
-from baidubce.bce_client_configuration import BceClientConfiguration
+from utils.baidubce.exception import BceClientError
+from utils.baidubce.exception import BceServerError
+from utils.baidubce.bce_client_configuration import BceClientConfiguration
 
 _logger = logging.getLogger(__name__)
 

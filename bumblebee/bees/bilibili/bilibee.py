@@ -40,7 +40,7 @@ class PutObjectResp(SelfAssemlingClass):
     pass
 
 
-class Bilibee():
+class BiliBee():
 
     config = Bilibili()
     bee = AbstractBee(config)
@@ -62,8 +62,8 @@ class Bilibee():
         '''
         for v in videos:
             self.middle = PreuploadResp(self.preUpload(v))
-            self.upload_url = 'https:' + middle.fetch_url
-            self.bee.headers.update(middle.fetch_headers)
+            self.upload_url = 'https:' + self.middle.fetch_url
+            self.bee.headers.update(self.middle.fetch_headers)
             po_resp = self.putObject(v)
             po_result = PutObjectResp(json.loads(po_resp.text))
             self.postPO()
@@ -73,17 +73,18 @@ class Bilibee():
         Get AK/SK, fetch_headers etc.
         '''
         self.preupload_params['name'] = file_name
-        self.preupload_params['size'] =
+        full_name = self.config.default_dir + file_name
+        self.preupload_params['size'] = os.path.getsize(full_name)
         return self.bee._GET(self.config.endpoints['preupload'],
                              _params=self.preupload_params)
 
-    def detectSTSAuthExpire(self, middle):
+    def detectSTSAuthExpire(self):
         '''
         check if time() is bigger than middle.Expiration
         '''
         pass
 
-    def putObject(self, middle) -> resp:
+    def putObject(self):
         '''
         call baidubce put_object_from_file method.
 
@@ -91,18 +92,18 @@ class Bilibee():
         '''
         config = BceClientConfiguration(
             credentials=BceCredentials(
-                access_key_id=middle.AccessKeyId,
-                secret_access_key=middle.SecretAccessKey
+                access_key_id=self.middle.AccessKeyId,
+                secret_access_key=self.middle.SecretAccessKey
             ),
-            endpoint=middle.endpoint
+            endpoint=self.middle.endpoint
         )
         bos_client = BosClient(config)
         resp = bos_client.put_object_from_file(
-                middle.bucket,
-                middle.key,
-                self.preupload_params['name'],
-            )
-       return resp
+            self.middle.bucket,
+            self.middle.key,
+            self.preupload_params['name'],
+        )
+        return resp
 
     def postPO(self):
         h = self.bee.headers.copy()
@@ -118,7 +119,7 @@ class Bilibee():
         return json.loads(resp.text)
 
     def preAdd(self):
-        resp = bee._GET(bee.pre_add)
+        resp = self.bee._GET(self.pre_add)
 
     # 3
     csrf = 'bb1b31e6c8c70215d0d3f34e6beb32f6'

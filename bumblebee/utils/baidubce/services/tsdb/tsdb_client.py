@@ -20,16 +20,16 @@ import json
 import logging
 import gzip
 
-from baidubce import bce_client_configuration
-from baidubce import utils
-from baidubce.auth import bce_v1_signer
-from baidubce.bce_base_client import BceBaseClient
-from baidubce.http import bce_http_client
-from baidubce.http import handler
-from baidubce.http import http_content_types
-from baidubce.http import http_headers
-from baidubce.http import http_methods
-from baidubce.services.tsdb import tsdb_handler
+from utils.baidubce import bce_client_configuration
+from utils.baidubce import utils
+from utils.baidubce.auth import bce_v1_signer
+from utils.baidubce.bce_base_client import BceBaseClient
+from utils.baidubce.http import bce_http_client
+from utils.baidubce.http import handler
+from utils.baidubce.http import http_content_types
+from utils.baidubce.http import http_headers
+from utils.baidubce.http import http_methods
+from utils.baidubce.services.tsdb import tsdb_handler
 
 
 

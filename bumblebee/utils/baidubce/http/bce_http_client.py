@@ -21,12 +21,12 @@ import time
 import traceback
 import urllib.parse
 
-import baidubce
-from baidubce import utils
-from baidubce.bce_response import BceResponse
-from baidubce.exception import BceHttpClientError
-from baidubce.exception import BceClientError
-from baidubce.http import http_headers
+import utils.baidubce
+from utils.baidubce import utils
+from utils.baidubce.bce_response import BceResponse
+from utils.baidubce.exception import BceHttpClientError
+from utils.baidubce.exception import BceClientError
+from utils.baidubce.http import http_headers
 
 
 _logger = logging.getLogger(__name__)
@@ -35,16 +35,16 @@ _logger = logging.getLogger(__name__)
 def _get_connection(protocol, host, port, connection_timeout_in_millis):
     """
     :param protocol
-    :type protocol: baidubce.protocol.Protocol
+    :type protocol: utils.baidubce.protocol.Protocol
     :param endpoint
     :type endpoint: str
     :param connection_timeout_in_millis
     :type connection_timeout_in_millis int
     """
-    if protocol.name == baidubce.protocol.HTTP.name:
+    if protocol.name == utils.baidubce.protocol.HTTP.name:
         return http.client.HTTPConnection(
             host=host, port=port, timeout=connection_timeout_in_millis / 1000)
-    elif protocol.name == baidubce.protocol.HTTPS.name:
+    elif protocol.name == utils.baidubce.protocol.HTTPS.name:
         return http.client.HTTPSConnection(
             host=host, port=port, timeout=connection_timeout_in_millis / 1000)
     else:
@@ -102,7 +102,7 @@ def send_request(
     Send request to BCE services.
 
     :param config
-    :type config: baidubce.BceClientConfiguration
+    :type config: utils.baidubce.BceClientConfiguration
 
     :param sign_function:
 
@@ -110,10 +110,10 @@ def send_request(
     :type response_handler_functions: list
 
     :param request:
-    :type request: baidubce.internal.InternalRequest
+    :type request: utils.baidubce.internal.InternalRequest
 
     :return:
-    :rtype: baidubce.BceResponse
+    :rtype: utils.baidubce.BceResponse
     """
     _logger.debug('%s request start: %s %s, %s, %s',
                   http_method, path, headers, params, body)
@@ -121,7 +121,7 @@ def send_request(
     headers = headers or {}
 
     user_agent = 'bce-sdk-python/%s/%s/%s' % (
-        baidubce.SDK_VERSION, sys.version, sys.platform)
+        utils.baidubce.SDK_VERSION, sys.version, sys.platform)
     user_agent = user_agent.replace('\n', '')
     headers[http_headers.USER_AGENT] = user_agent
     should_get_new_date = False
@@ -130,7 +130,7 @@ def send_request(
     headers[http_headers.HOST] = config.endpoint
 
     if isinstance(body, str):
-        body = body.encode(baidubce.DEFAULT_ENCODING)
+        body = body.encode(utils.baidubce.DEFAULT_ENCODING)
     if not body:
         headers[http_headers.CONTENT_LENGTH] = 0
     elif isinstance(body, str):

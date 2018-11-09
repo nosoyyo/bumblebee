@@ -17,18 +17,18 @@ This module provides a client class for CDN.
 import copy
 import json
 import logging
-import baidubce
+import utils.baidubce
 
-from baidubce import bce_base_client
-from baidubce.auth import bce_v1_signer
-from baidubce.http import bce_http_client
-from baidubce.http import handler
-from baidubce.http import http_content_types
-from baidubce.http import http_headers
-from baidubce.http import http_methods
-from baidubce.exception import BceClientError
-from baidubce.exception import BceServerError
-from baidubce.utils import required
+from utils.baidubce import bce_base_client
+from utils.baidubce.auth import bce_v1_signer
+from utils.baidubce.http import bce_http_client
+from utils.baidubce.http import handler
+from utils.baidubce.http import http_content_types
+from utils.baidubce.http import http_headers
+from utils.baidubce.http import http_methods
+from utils.baidubce.exception import BceClientError
+from utils.baidubce.exception import BceServerError
+from utils.baidubce.utils import required
 
 _logger = logging.getLogger(__name__)
 

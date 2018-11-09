@@ -1,1 +1,1 @@
-from .bilibee import Bilibee
+from .bilibee import BiliBee

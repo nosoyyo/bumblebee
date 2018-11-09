@@ -14,9 +14,9 @@
 This module defines a common configuration class for BCE.
 """
 
-import baidubce.protocol
-import baidubce.region
-from baidubce.retry_policy import BackOffRetryPolicy
+import utils.baidubce.protocol
+import utils.baidubce.region
+from utils.baidubce.retry_policy import BackOffRetryPolicy
 
 
 class BceClientConfiguration(object):
@@ -56,8 +56,8 @@ class BceClientConfiguration(object):
                 self.__dict__[k] = v
 
 
-DEFAULT_PROTOCOL = baidubce.protocol.HTTP
-DEFAULT_REGION = baidubce.region.BEIJING
+DEFAULT_PROTOCOL = utils.baidubce.protocol.HTTP
+DEFAULT_REGION = utils.baidubce.region.BEIJING
 DEFAULT_CONNECTION_TIMEOUT_IN_MILLIS = 50 * 1000
 DEFAULT_SEND_BUF_SIZE = 1024 * 1024
 DEFAULT_RECV_BUF_SIZE = 10 * 1024 * 1024

@@ -17,7 +17,7 @@ This module defines a common configuration class for BCE.
 import http.client
 import logging
 
-from baidubce.exception import BceServerError
+from utils.baidubce.exception import BceServerError
 
 
 _logger = logging.getLogger(__name__)

@@ -16,9 +16,9 @@ This module provides general http handler functions for processing http response
 
 import http.client
 import json
-from baidubce import utils
-from baidubce.exception import BceClientError
-from baidubce.exception import BceServerError
+from utils.baidubce import utils
+from utils.baidubce.exception import BceClientError
+from utils.baidubce.exception import BceServerError
 
 
 def parse_json(http_response, response):
@@ -29,7 +29,7 @@ def parse_json(http_response, response):
     :type http_response: httplib.HTTPResponse
 
     :param response: general response object which will be returned to the caller
-    :type response: baidubce.BceResponse
+    :type response: utils.baidubce.BceResponse
 
     :return: always true
     :rtype bool
@@ -49,12 +49,12 @@ def parse_error(http_response, response):
     :type http_response: httplib.HTTPResponse
 
     :param response: general response object which will be returned to the caller
-    :type response: baidubce.BceResponse
+    :type response: utils.baidubce.BceResponse
 
     :return: false if http status code is 2xx, raise an error otherwise
     :rtype bool
 
-    :raise baidubce.exception.BceClientError: if http status code is NOT 2xx
+    :raise utils.baidubce.exception.BceClientError: if http status code is NOT 2xx
     """
     if http_response.status / 100 == http.client.OK / 100:
         return False
