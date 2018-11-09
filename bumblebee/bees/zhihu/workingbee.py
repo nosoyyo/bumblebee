@@ -2,7 +2,7 @@ import time
 from random import random
 
 from config import Zhihu
-from models.answer import Answer
+from .models.answer import Answer
 from .contentbee import ContentBee
 
 

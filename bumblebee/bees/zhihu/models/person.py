@@ -17,7 +17,6 @@ class Person(BeeModel):
 
     '''
     root = Zhihu.root
-    self_url_token = Zhihu.self_url_token
     cookies_domain = Zhihu.cookies_domain
 
     col = 'persons'
@@ -28,14 +27,18 @@ class Person(BeeModel):
         if doc:
             self.__dict__ = doc
             self.has_doc = True
-            self.aloha(self.url_token)
+            # not sure about the url_token keyname in doc
+            self.aloha(doc['url_token'])
         else:
-            self.url_token = url_token or self.self_url_token
+            self.url_token = url_token or self.getSelfUrlTokenFromCookies()
             self.has_doc = False
             self.aloha(url_token)
 
     def __repr__(self):
         return 'Person'
+
+    def getSelfUrlTokenFromCookies(self):
+        raise NotImplementedError
 
     def aloha(self, url_token):
         query = {'url_token': self.url_token}

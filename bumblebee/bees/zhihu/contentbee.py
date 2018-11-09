@@ -2,15 +2,14 @@ import time
 import functools
 
 import utils
-from .bumblebee import BumbleBee
+from bees import AbstractBee
 from config import Zhihu
 
 
-class ContentBee(BumbleBee):
+class ContentBee(AbstractBee):
 
     z = Zhihu()
     root = z.root
-    url_token = z.url_token
 
     def sessionTokenCheck(func):
         '''

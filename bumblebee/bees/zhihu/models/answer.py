@@ -3,7 +3,7 @@ import logging
 from .base import BeeModel
 from .person import Person
 from .question import Question
-from exceptions import BumbleBeeAnswerError
+from bees.exceptions import BumbleBeeAnswerError
 from config import Zhihu
 
 

@@ -2,7 +2,7 @@ import logging
 
 from .base import BeeModel
 from .person import Person
-from exceptions import BumbleBeeQuestionError
+from bees.exceptions import BumbleBeeQuestionError
 
 # TODO at all
 

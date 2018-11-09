@@ -1,13 +1,13 @@
 import json
 import time
 import redis
+import requests
 
 import utils
-import requests
-from exceptions import BumbleBeeError
+from bees.exceptions import BumbleBeeError
 
 
-class BumbleBee():
+class AbstractBee():
     '''
     Gerenralized crawler.
     '''
@@ -23,6 +23,7 @@ class BumbleBee():
         self.cookies = {item['name']: item['value']
                         for item in cookies if item['domain']
                         == site_obj.cookies_domain}
+        self.headers = site_obj.headers
 
     # TODO
     def detectCookiesExpire(self):
@@ -56,17 +57,20 @@ class BumbleBee():
                 raise BumbleBeeError(1002)
 
     @utils.slowDown
-    def _POST(self, url: str, _params: dict = None):
+    def _POST(self, url: str, headers=None, _params: dict = None):
         '''
         :return ?: may return a `dict` or an `int` as http code
         :param _params: {'include':['a,b']}
         '''
+
+        headers = headers or self.headers
+
         if _params is None:
             _params = {}
 
         try:
             resp = requests.post(url, cookies=self.cookies,
-                                 headers=self.headers, params=_params)
+                                 headers=headers, params=_params)
         except Exception as e:
             raise BumbleBeeError(1003)
         finally:
@@ -82,6 +86,8 @@ class BumbleBee():
                 raise BumbleBeeError(1004)
         elif resp.status_code == 204:
             return 204
+        else:
+            return resp
 
     @utils.slowDown
     def _DELETE(self, url: str) -> str:
