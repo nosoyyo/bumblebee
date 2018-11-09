@@ -24,7 +24,9 @@ class CChanBee():
         ranking = self.config.endpoints['ranking']
         resp = self.bee._GET(ranking)
         soup = BeautifulSoup(resp.text, 'lxml').select('div.box-general-list')
+
         soup = self.goodCatsFilter(soup)
+        self.saveTitles(soup)
 
         # get the raw URI of video pages
         self.top20 = [item.a['href'] for item in soup]
@@ -52,6 +54,15 @@ class CChanBee():
             since_date = f'{since.year}.{since.month}.{since.day}'
             since_time = f'{since.hour}:{since.minute}:{since.second}'
             print(f'nothing changed since {since_date} {since_time}')
+
+    def saveTitles(self, soup):
+
+        for item in soup:
+            URI = sumChars(item.a['href']).replace('watch', '')
+            title = item.select('a.anchor-content-general-list')[0].text
+            self.r.hset('video_titles', URI, title)
+
+        print(f'{len(soup)} titles saved.')
 
     def goodCatsFilter(self, soup):
         result = []
@@ -95,8 +106,13 @@ class CChanBee():
                 f'https://ccs3.akamaized.net/cchanclips/{URI}/clip.mp4')
             usage = time.time() - started
 
+            # local storage
             with open(f'{self.full_path}/{URI}.mp4', 'wb') as f:
                 f.write(resp.content)
+
+            # save title into redis
+
+            # stats
             size = os.path.getsize(f'{self.full_path}/{URI}.mp4')
             print(f'{URI}.mp4 saved on disk.')
             print(f'{size} bytes, {usage:.1f} seconds. \n\
