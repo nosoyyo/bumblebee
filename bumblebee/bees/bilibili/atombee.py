@@ -39,6 +39,8 @@ class BiliAtomBee():
     def upload(self):
 
         middle = PreuploadResp(self.preUpload())
+        # debug
+        self.middle = middle
         self.bee.headers.update(middle.fetch_headers)
         po_resp = self.putObject(middle)
         po_result = PutObjectResp(json.loads(po_resp.text))
@@ -67,7 +69,7 @@ class BiliAtomBee():
         resp = bos_client.put_object_from_file(
             middle.bucket,
             middle.key,
-            self.full_name,
+            self.file.full_name,
         )
         return resp
 
@@ -75,7 +77,7 @@ class BiliAtomBee():
         h = self.bee.headers.copy()
         h.update(middle.fetch_headers)
         _params = {}
-        _params['name'] = self.preupload_params['name']
+        _params['name'] = self.file.name
         _params['fetch'] = None
         _params['output'] = 'json'
         _params['profile'] = 'ugcupos/fetch'
