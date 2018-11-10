@@ -12,12 +12,10 @@ class AbstractBee():
     Gerenralized crawler.
     '''
 
-    cpool = redis.ConnectionPool(
-        host='localhost', port=6379, decode_responses=True, db=1)
-    r = redis.Redis(connection_pool=cpool)
-
     def __init__(self, site_obj):
 
+        self.cpool = site_obj.cpool
+        self.r = redis.Redis(connection_pool=self.cpool)
         with open(site_obj.cookies_file) as f:
             cookies = json.load(f)
         self.cookies = {item['name']: item['value']
