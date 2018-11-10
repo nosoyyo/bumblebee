@@ -1,0 +1,8 @@
+requests
+beautifulsoup4
+lxml
+redis
+redis-py
+mongodb
+pymongo
+pycrypto

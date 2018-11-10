@@ -24,7 +24,7 @@ import urllib.parse
 from Crypto.Cipher import AES
 
 import utils.baidubce
-from utils.baidubce.http import http_headers
+from .http import http_headers
 
 
 def get_md5_from_fp(fp, offset=0, length=-1, buf_size=8192):
@@ -189,6 +189,8 @@ def _get_normalized_char_list():
     for ch in string.ascii_letters + string.digits + '.~-_':
         ret[ord(ch)] = ch
     return ret
+
+
 _NORMALIZED_CHAR_LIST = _get_normalized_char_list()
 
 
@@ -365,6 +367,7 @@ class Expando(object):
     """
     Expandable class
     """
+
     def __init__(self, attr_dict=None):
         if attr_dict:
             self.__dict__.update(attr_dict)
@@ -414,7 +417,8 @@ def required(**types):
                     if v is None:
                         raise ValueError('arg "%s" should not be None' % k)
                     if not isinstance(v, types[k]):
-                        raise TypeError('arg "%s"= %r does not match %s' % (k, v, types[k]))
+                        raise TypeError(
+                            'arg "%s"= %r does not match %s' % (k, v, types[k]))
             return f(*args, **kwds)
         _decorated.__name__ = f.__name__
         return _decorated
@@ -441,7 +445,8 @@ def parse_host_port(endpoint, default_protocol):
         # scheme in endpoint dominates input default_protocol
         parse_result = urllib.parse.urlparse(endpoint, default_protocol.name)
     except Exception as e:
-        raise ValueError('Invalid endpoint:%s, error:%s' % (endpoint, e.message))
+        raise ValueError('Invalid endpoint:%s, error:%s' %
+                         (endpoint, e.message))
 
     if parse_result.scheme == utils.baidubce.protocol.HTTP.name:
         protocol = utils.baidubce.protocol.HTTP
@@ -462,7 +467,7 @@ def aes128_encrypt_16char_key(adminpass, secretkey):
     """
     encrypt admin password by AES128
     """
-    pad_it = lambda s: s + (16 - len(s) % 16) * chr(16 - len(s) % 16)
+    def pad_it(s): return s + (16 - len(s) % 16) * chr(16 - len(s) % 16)
     key = secretkey[0:16]
     mode = AES.MODE_ECB
     cryptor = AES.new(key, mode, key)

@@ -14,25 +14,32 @@
 This module provide http request function for bce services.
 """
 
-import logging
-import http.client
 import sys
 import time
+import logging
 import traceback
-import urllib.parse
+import http.client
 
-import utils.baidubce
-from utils.baidubce import utils
+from . import http_headers
+from utils.baidubce import (
+    protocol,
+    SDK_VERSION,
+    DEFAULT_ENCODING,
+)
+from utils.baidubce.utils import (
+    convert_to_standard_string,
+    parse_host_port,
+    get_canonical_querystring,
+    get_canonical_time,
+)
 from utils.baidubce.bce_response import BceResponse
-from utils.baidubce.exception import BceHttpClientError
-from utils.baidubce.exception import BceClientError
-from utils.baidubce.http import http_headers
+from utils.baidubce.exception import BceHttpClientError, BceClientError
 
 
 _logger = logging.getLogger(__name__)
 
 
-def _get_connection(protocol, host, port, connection_timeout_in_millis):
+def _get_connection(_protocol, host, port, connection_timeout_in_millis):
     """
     :param protocol
     :type protocol: utils.baidubce.protocol.Protocol
@@ -41,23 +48,24 @@ def _get_connection(protocol, host, port, connection_timeout_in_millis):
     :param connection_timeout_in_millis
     :type connection_timeout_in_millis int
     """
-    if protocol.name == utils.baidubce.protocol.HTTP.name:
+    if _protocol.name == protocol.HTTP.name:
         return http.client.HTTPConnection(
             host=host, port=port, timeout=connection_timeout_in_millis / 1000)
-    elif protocol.name == utils.baidubce.protocol.HTTPS.name:
+    elif _protocol.name == protocol.HTTPS.name:
         return http.client.HTTPSConnection(
             host=host, port=port, timeout=connection_timeout_in_millis / 1000)
     else:
         raise ValueError(
-            'Invalid protocol: %s, either HTTP or HTTPS is expected.' % protocol)
+            'Invalid protocol: %s, either HTTP or HTTPS is expected.' % _protocol)
 
 
 def _send_http_request(conn, http_method, uri, headers, body, send_buf_size):
-    conn.putrequest(http_method, uri, skip_host=True, skip_accept_encoding=True)
+    conn.putrequest(http_method, uri, skip_host=True,
+                    skip_accept_encoding=True)
 
     for k, v in list(headers.items()):
-        k = utils.convert_to_standard_string(k)
-        v = utils.convert_to_standard_string(v)
+        k = convert_to_standard_string(k)
+        v = convert_to_standard_string(v)
         conn.putheader(k, v)
     conn.endheaders()
 
@@ -90,7 +98,8 @@ def check_headers(headers):
     """
     for k, v in headers.items():
         if isinstance(v, str) and '\n' in v:
-            raise BceClientError(r'There should not be any "\n" in header[%s]:%s' % (k, v))
+            raise BceClientError(
+                r'There should not be any "\n" in header[%s]:%s' % (k, v))
 
 
 def send_request(
@@ -121,7 +130,7 @@ def send_request(
     headers = headers or {}
 
     user_agent = 'bce-sdk-python/%s/%s/%s' % (
-        utils.baidubce.SDK_VERSION, sys.version, sys.platform)
+        SDK_VERSION, sys.version, sys.platform)
     user_agent = user_agent.replace('\n', '')
     headers[http_headers.USER_AGENT] = user_agent
     should_get_new_date = False
@@ -130,7 +139,7 @@ def send_request(
     headers[http_headers.HOST] = config.endpoint
 
     if isinstance(body, str):
-        body = body.encode(utils.baidubce.DEFAULT_ENCODING)
+        body = body.encode(DEFAULT_ENCODING)
     if not body:
         headers[http_headers.CONTENT_LENGTH] = 0
     elif isinstance(body, str):
@@ -143,7 +152,8 @@ def send_request(
     if hasattr(body, "tell") and hasattr(body, "seek"):
         offset = body.tell()
 
-    protocol, host, port = utils.parse_host_port(config.endpoint, config.protocol)
+    protocol, host, port = parse_host_port(
+        config.endpoint, config.protocol)
 
     headers[http_headers.HOST] = host
     if port != config.protocol.default_port:
@@ -151,7 +161,7 @@ def send_request(
     headers[http_headers.AUTHORIZATION] = sign_function(
         config.credentials, http_method, path, headers, params)
 
-    encoded_params = utils.get_canonical_querystring(params, False)
+    encoded_params = get_canonical_querystring(params, False)
     if len(encoded_params) > 0:
         uri = path + '?' + encoded_params
     else:
@@ -165,7 +175,7 @@ def send_request(
         try:
             # restore the offset of fp body when retrying
             if should_get_new_date is True:
-                headers[http_headers.BCE_DATE] = utils.get_canonical_time()
+                headers[http_headers.BCE_DATE] = get_canonical_time()
 
             headers[http_headers.AUTHORIZATION] = sign_function(
                 config.credentials, http_method, path, headers, params)
@@ -173,11 +183,11 @@ def send_request(
             if retries_attempted > 0 and offset is not None:
                 body.seek(offset)
 
-            conn = _get_connection(protocol, host, port, config.connection_timeout_in_mills)
+            conn = _get_connection(protocol, host, port,
+                                   config.connection_timeout_in_mills)
 
             http_response = _send_http_request(
                 conn, http_method, uri, headers, body, config.send_buf_size)
-
 
             headers_list = http_response.getheaders()
             _logger.debug(
@@ -196,7 +206,8 @@ def send_request(
                 conn.close()
 
             # insert ">>>>" before all trace back lines and then save it
-            errors.append('\n'.join('>>>>' + line for line in traceback.format_exc().splitlines()))
+            errors.append(
+                '\n'.join('>>>>' + line for line in traceback.format_exc().splitlines()))
 
             if config.retry_policy.should_retry(e, retries_attempted):
                 delay_in_millis = config.retry_policy.get_delay_before_next_retry_in_millis(

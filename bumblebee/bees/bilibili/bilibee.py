@@ -6,9 +6,9 @@ import json
 
 from bees import AbstractBee
 from config import Bilibili
-from utils.baidubce.services.bos.bos_client import BosClient
-from utils.baidubce.auth.bce_credentials import BceCredentials
-from utils.baidubce.bce_client_configuration import BceClientConfiguration
+from baidubce.services.bos.bos_client import BosClient
+from baidubce.auth.bce_credentials import BceCredentials
+from baidubce.bce_client_configuration import BceClientConfiguration
 
 '''
 DEBUG STUFF
@@ -41,42 +41,55 @@ class PutObjectResp(SelfAssemlingClass):
 
 
 class BiliBee():
+    '''
+    For upload & add single file upon bilibili.com
+    '''
 
     config = Bilibili()
+    cu = os.getlogin()
+    config.full_path = f'/Users/{cu}/{config.default_dir}'
     bee = AbstractBee(config)
     bee.headers = config.headers.copy()
     preupload_params = config.preupload_params
 
+    def __init__(self, file_name):
+        '''
+        : param file_name: looks like 'a42b4aa9aa1a47ad8bb2c02a57b60482.mp4'
+        '''
+        self.URI = file_name.replace('.mp4', '')
+        self.full_name = f'{self.config.full_path}/{file_name}'
+
+    def uploadMain(self):
+        pass
+
     def checkVideos(self, path: str = None) -> list:
         '''
+        NOT FOR THIS CLASS
+        SHOULD BE MOVED TO BATCH CLASS
         check the default path, collect videos for uploading.
 
         : return: a `list` of video file path(s)
         '''
-        _dir = path or self.config.default_dir
+        _dir = path or self.config.full_path
         return [f for f in os.listdir(_dir) if f.endswith('.mp4')]
 
-    def upload(self, videos: list):
-        '''
-        : param videos: a `list` of video file_names
-        '''
-        for v in videos:
-            self.middle = PreuploadResp(self.preUpload(v))
-            self.upload_url = 'https:' + self.middle.fetch_url
-            self.bee.headers.update(self.middle.fetch_headers)
-            po_resp = self.putObject(v)
-            po_result = PutObjectResp(json.loads(po_resp.text))
-            self.postPO()
+    def upload(self):
 
-    def preUpload(self, file_name) -> json:
+        middle = PreuploadResp(self.preUpload(self.full_name))
+        # upload_url = 'https:' + middle.fetch_url
+        self.bee.headers.update(middle.fetch_headers)
+        po_resp = self.putObject(middle)
+        po_result = PutObjectResp(json.loads(po_resp.text))
+        self.postPO(middle)
+
+    def preUpload(self, full_name) -> json:
         '''
         Get AK/SK, fetch_headers etc.
         '''
-        self.preupload_params['name'] = file_name
-        full_name = self.config.default_dir + file_name
+        self.preupload_params['name'] = full_name.split('/')[-1]
         self.preupload_params['size'] = os.path.getsize(full_name)
-        return self.bee._GET(self.config.endpoints['preupload'],
-                             _params=self.preupload_params)
+        return self.bee._XGET(self.config.endpoints['preupload'],
+                              _params=self.preupload_params)
 
     def detectSTSAuthExpire(self):
         '''
@@ -84,62 +97,65 @@ class BiliBee():
         '''
         pass
 
-    def putObject(self):
+    def putObject(self, middle):
         '''
         call baidubce put_object_from_file method.
 
-        :return: resp of requests
+        : return: resp of requests
         '''
         config = BceClientConfiguration(
             credentials=BceCredentials(
-                access_key_id=self.middle.AccessKeyId,
-                secret_access_key=self.middle.SecretAccessKey
+                access_key_id=middle.AccessKeyId,
+                secret_access_key=middle.SecretAccessKey
             ),
-            endpoint=self.middle.endpoint
+            endpoint=middle.endpoint
         )
         bos_client = BosClient(config)
         resp = bos_client.put_object_from_file(
-            self.middle.bucket,
-            self.middle.key,
-            self.preupload_params['name'],
+            middle.bucket,
+            middle.key,
+            self.full_name,
         )
         return resp
 
-    def postPO(self):
+    def postPO(self, middle):
         h = self.bee.headers.copy()
-        h.update(self.middle.fetch_headers)
+        h.update(middle.fetch_headers)
         _params = {}
         _params['name'] = self.preupload_params['name']
         _params['fetch'] = None
         _params['output'] = 'json'
         _params['profile'] = 'ugcupos/fetch'
-        _params['biz_id'] = self.middle.biz_id
-        endpoint = self.endpoints['postPO'] + self.middle.key
+        _params['biz_id'] = middle.biz_id
+        endpoint = self.endpoints['postPO'] + middle.key
         resp = self.bee._POST(endpoint, headers=h, _params=_params)
         return json.loads(resp.text)
 
     def preAdd(self):
-        resp = self.bee._GET(self.pre_add)
+        resp = self.bee._XGET(self.pre_add)
 
-    # 3
-    csrf = 'bb1b31e6c8c70215d0d3f34e6beb32f6'
-    add = Bilibili.member
-    _add_params = {'csrf': csrf}
+    def add(self, middle, po_result):
+        '''
+        '''
+        csrf = 'bb1b31e6c8c70215d0d3f34e6beb32f6'
+        add_url = Bilibili.member
+        add_params = {'csrf': csrf}
 
-    some_title = '美丽的日本视频'
-    desc = '一段发人深省的对话'
-    middle = {'bili_filename': ''}
+        some_title = self.bee.r.hget(
+            'video_titles', self.URI)
+        desc = '一段发人深省的对话'
+        middle = {'bili_filename': ''}
 
-    payload = {'copyright': 1,
-               'videos': [{'filename': middle['bili_filename'],
-                           'title': some_title,
-                           'desc': desc}],
-               'no_reprint': 1,
-               'tid': 21,
-               'cover': '',
-               'title': 'test',
-               'tag': '日常',
-               'desc_format_id': 0,
-               'desc': desc,
-               'dynamic': '',
-               'subtitle': {'open': 0, 'lan': ''}}
+        payload = {'copyright': 1,
+                   'videos': [{'filename': middle['bili_filename'],
+                               'title': some_title,
+                               'desc': desc}],
+                   'no_reprint': 1,
+                   'tid': 21,
+                   'cover': '',
+                   'title': 'test',
+                   'tag': '日常',
+                   'desc_format_id': 0,
+                   'desc': desc,
+                   'dynamic': '',
+                   'subtitle': {'open': 0, 'lan': ''}}

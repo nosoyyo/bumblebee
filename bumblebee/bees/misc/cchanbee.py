@@ -40,7 +40,10 @@ class CChanBee():
         # see if any changes occured
         hkeys = self.r.hkeys('ccb_init')
         hkeys.sort()
-        last_state = sumChars(self.r.hget('ccb_init', hkeys[-2]))
+        if len(hkeys) >= 2:
+            last_state = sumChars(self.r.hget('ccb_init', hkeys[-2]))
+        else:
+            last_state = ''
         this_state = sumChars(self.top20)
         change_flag = not bool(this_state == last_state)
         print(f'change occured since last probe: {change_flag}')
