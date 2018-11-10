@@ -1,3 +1,6 @@
+import redis
+
+
 class ConfigError(Exception):
 
     def __init__(self, msg):
@@ -13,6 +16,9 @@ class Headers():
 
 
 class Bilibili(Headers):
+
+    cpool = redis.ConnectionPool(
+        host='localhost', port=6379, decode_responses=True, db=2)
 
     cookies_file = 'cookies/bilibili.json'
     cookies_domain = '.bilibili.com'
@@ -42,6 +48,9 @@ class Bilibili(Headers):
 
 class CChan(Headers):
 
+    cpool = redis.ConnectionPool(
+        host='localhost', port=6379, decode_responses=True, db=2)
+
     cookies_domain = '.cchan.tv'
     cookies_file = 'cookies/cchan.json'
     default_dir = 'bilibee/cchan'
@@ -66,12 +75,20 @@ class CChan(Headers):
 
 
 class Instagram(Headers):
+
+    # db not decided yet since this is on hold
+    cpool = redis.ConnectionPool(
+        host='localhost', port=6379, decode_responses=True, db=0)
+
     cookies_file = ''
     cookies_domain = ''
     root = ''
 
 
 class Zhihu(Headers):
+
+    cpool = redis.ConnectionPool(
+        host='localhost', port=6379, decode_responses=True, db=1)
 
     cookies_file = 'cookies/zhihu.json'
     cookies_domain = '.zhihu.com'
