@@ -37,8 +37,9 @@ class VideoFile():
         '''
         if '.mp4' in file_name:
             self.URI = file_name.replace('.mp4', '')
-            self.file_name = file_name
+            self.name = file_name
         else:
             self.URI = file_name
-            self.file_name = f'{file_name}.mp4'
-        self.full_name = f'{self.config.full_path}/{file_name}'
+            self.name = f'{file_name}.mp4'
+        self.full_name = f'{self.full_path}/{file_name}'
+        self.size = os.path.getsize(self.full_name)

@@ -24,28 +24,25 @@ class BiliAtomBee():
     bee.headers = config.headers.copy()
 
     def __init__(self, file_obj):
-        pass
+        self.file = file_obj
+        self.config.preupload_params['name'] = file_obj.name
+        self.config.preupload_params['size'] = file_obj.size
+
+    def preUpload(self) -> json:
+        '''
+        Get AK/SK, fetch_headers etc.
+        '''
+
+        return self.bee._XGET(self.config.endpoints['preupload'],
+                              _params=self.preupload_params)
 
     def upload(self):
 
-        middle = PreuploadResp(self.preUpload(self.full_name))
-        # upload_url = 'https:' + middle.fetch_url
+        middle = PreuploadResp(self.preUpload())
         self.bee.headers.update(middle.fetch_headers)
         po_resp = self.putObject(middle)
         po_result = PutObjectResp(json.loads(po_resp.text))
         self.postPO(middle)
-
-    def uploadMain(self):
-        pass
-
-    def preUpload(self, full_name) -> json:
-        '''
-        Get AK/SK, fetch_headers etc.
-        '''
-        self.preupload_params['name'] = full_name.split('/')[-1]
-        self.preupload_params['size'] = os.path.getsize(full_name)
-        return self.bee._XGET(self.config.endpoints['preupload'],
-                              _params=self.preupload_params)
 
     def detectSTSAuthExpire(self):
         '''
