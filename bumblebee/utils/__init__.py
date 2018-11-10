@@ -1,4 +1,4 @@
-from .baidubceutils import *
+from .bce.bce_v1_signer import sign
 from .sumchars import sumChars
 from .customuuid import genToken
 from .pipeline import MongoDBPipeline

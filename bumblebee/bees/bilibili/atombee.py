@@ -4,9 +4,10 @@ import json
 from config import Bilibili
 from bees import AbstractBee
 from utils import SelfAssemlingClass
-from baidubce.services.bos.bos_client import BosClient
-from baidubce.auth.bce_credentials import BceCredentials
-from baidubce.bce_client_configuration import BceClientConfiguration
+from utils.bce import BosClient, BceCredentials, BceClientConfiguration
+
+# degub
+file_name = '3ee1d846b6c14ec285afaa5aecdd9aca.mp4'
 
 
 class PreuploadResp(SelfAssemlingClass):
@@ -34,7 +35,7 @@ class BiliAtomBee():
         '''
 
         return self.bee._XGET(self.config.endpoints['preupload'],
-                              _params=self.preupload_params)
+                              _params=self.config.preupload_params)
 
     def upload(self):
 
@@ -58,18 +59,19 @@ class BiliAtomBee():
 
         : return: resp of requests
         '''
-        config = BceClientConfiguration(
+        baidubce_config = BceClientConfiguration(
             credentials=BceCredentials(
                 access_key_id=middle.AccessKeyId,
                 secret_access_key=middle.SecretAccessKey
             ),
             endpoint=middle.endpoint
         )
-        bos_client = BosClient(config)
+        bos_client = BosClient(baidubce_config)
         resp = bos_client.put_object_from_file(
             middle.bucket,
             middle.key,
             self.file.full_name,
+            content_length=self.file.size,
         )
         return resp
 
