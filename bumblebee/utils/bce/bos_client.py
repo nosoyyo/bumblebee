@@ -761,8 +761,7 @@ class BosClient(BceBaseClient):
                 content_md5 = bceutils.get_md5_from_fp(fp, length=content_length,
                                                        buf_size=recv_buf_size)
             if content_type is None:
-                content_type = bceutils.guess_content_type_by_file_name(
-                    file_name)
+                content_type = 'application/octet-stream'
             return self.put_object(bucket, key, fp,
                                    content_length=content_length,
                                    content_md5=content_md5,

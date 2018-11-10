@@ -22,23 +22,18 @@ import json
 import logging
 import shutil
 
-import utils.baidubce
-from utils.baidubce import bce_client_configuration
-from utils.baidubce import utils
-from utils.baidubce.auth import bce_v1_signer
-from utils.baidubce.bce_base_client import BceBaseClient
-from utils.baidubce.exception import BceClientError
-from utils.baidubce.exception import BceServerError
-from utils.baidubce.exception import BceHttpClientError
-from utils.baidubce.http import bce_http_client
-from utils.baidubce.http import handler
-from utils.baidubce.http import http_content_types
-from utils.baidubce.http import http_headers
-from utils.baidubce.http import http_methods
-from utils.baidubce.services import bos
-from utils.baidubce.services.bos import bos_handler
-from utils.baidubce.services.bos import storage_class
-from utils.baidubce.utils import required
+from . import bce_client_configuration, bce_v1_signer
+
+from . import bceutils
+
+from .bce_base_client import BceBaseClient
+from .exception import BceClientError, BceServerError
+from .http import (bce_http_client, handler,
+                   http_content_types, http_headers, http_methods)
+from .services import bos
+from .services.bos import bos_handler
+from .services.bos import storage_class
+from .bceutils import required
 
 
 _logger = logging.getLogger(__name__)
@@ -48,6 +43,7 @@ class BosClient(BceBaseClient):
     """
     sdk client
     """
+
     def __init__(self, config=None):
         BceBaseClient.__init__(self, config)
 
@@ -76,7 +72,8 @@ class BosClient(BceBaseClient):
         :rtype: str
         """
         params = {'location': ''}
-        response = self._send_request(http_methods.GET, bucket_name, params=params, config=config)
+        response = self._send_request(
+            http_methods.GET, bucket_name, params=params, config=config)
         return response.location_constraint
 
     @required(bucket_name=(str, str))
@@ -151,7 +148,8 @@ class BosClient(BceBaseClient):
                            bucket_name,
                            body=json.dumps({'accessControlList': acl},
                                            default=BosClient._dump_acl_object),
-                           headers={http_headers.CONTENT_TYPE: http_content_types.JSON},
+                           headers={
+                               http_headers.CONTENT_TYPE: http_content_types.JSON},
                            params={'acl': ''},
                            config=config)
 
@@ -213,7 +211,7 @@ class BosClient(BceBaseClient):
         params = params or {}
         # specified protocol > protocol in endpoint > default protocol
         endpoint_protocol, endpoint_host, endpoint_port = \
-            utils.parse_host_port(config.endpoint, config.protocol)
+            bceutils.parse_host_port(config.endpoint, config.protocol)
         protocol = protocol or endpoint_protocol
 
         full_host = endpoint_host
@@ -236,16 +234,16 @@ class BosClient(BceBaseClient):
         return "%s://%s%s?%s" % (protocol.name,
                                  full_host,
                                  path,
-                                 utils.get_canonical_querystring(params, False))
+                                 bceutils.get_canonical_querystring(params, False))
 
     @required(bucket_name=(str, str), rules=(list, dict))
-    def put_bucket_lifecycle(self, 
+    def put_bucket_lifecycle(self,
                              bucket_name,
                              rules,
                              config=None):
         """
         Put Bucket Lifecycle
-       
+
         :type bucket: string
         :param bucket: None
 
@@ -254,7 +252,7 @@ class BosClient(BceBaseClient):
 
         :return:**Http Response**
         """
-        return self._send_request(http_methods.PUT, 
+        return self._send_request(http_methods.PUT,
                                   bucket_name,
                                   params={'lifecycle': ''},
                                   body=json.dumps({'rule': rules}),
@@ -270,16 +268,16 @@ class BosClient(BceBaseClient):
 
         :return:**Http Response**
         """
-        return self._send_request(http_methods.GET, 
-                                  bucket_name, 
+        return self._send_request(http_methods.GET,
+                                  bucket_name,
                                   params={'lifecycle': ''},
-                                  config=config) 
+                                  config=config)
 
     @required(bucket_name=(str, str))
     def delete_bucket_lifecycle(self, bucket_name, config=None):
         """
         Delete Bucket Lifecycle
-        
+
         :type bucket: string
         :param bucket: None
 
@@ -288,10 +286,10 @@ class BosClient(BceBaseClient):
         return self._send_request(http_methods.DELETE,
                                   bucket_name,
                                   params={'lifecycle': ''},
-                                  config=config)       
-    
+                                  config=config)
+
     @required(bucket_name=(str, str), cors_configuration=list)
-    def put_bucket_cors(self, 
+    def put_bucket_cors(self,
                         bucket_name,
                         cors_configuration,
                         config=None):
@@ -308,7 +306,8 @@ class BosClient(BceBaseClient):
         return self._send_request(http_methods.PUT,
                                   bucket_name,
                                   params={'cors': ''},
-                                  body=json.dumps({'corsConfiguration': cors_configuration}),
+                                  body=json.dumps(
+                                      {'corsConfiguration': cors_configuration}),
                                   config=config)
 
     @required(bucket_name=(str, str))
@@ -341,7 +340,7 @@ class BosClient(BceBaseClient):
                                   params={'cors': ''},
                                   config=config)
 
-    @required(bucket_name=(str, str))        
+    @required(bucket_name=(str, str))
     def list_objects(self, bucket_name,
                      max_keys=1000, prefix=None, marker=None, delimiter=None,
                      config=None):
@@ -409,7 +408,6 @@ class BosClient(BceBaseClient):
             raise ValueError('range should have length of 2')
         return {http_headers.RANGE: 'bytes=%d-%d' % tuple(range)}
 
-
     @staticmethod
     def _parse_bos_object(http_response, response):
         """Sets response.body to http_response and response.user_metadata to a dict consists of all http
@@ -428,8 +426,8 @@ class BosClient(BceBaseClient):
         for k, v in http_response.getheaders():
             if k.startswith(http_headers.BCE_USER_METADATA_PREFIX):
                 k = k[len(http_headers.BCE_USER_METADATA_PREFIX):]
-                user_metadata[k.decode(baidubce.DEFAULT_ENCODING)] = \
-                    v.decode(baidubce.DEFAULT_ENCODING)
+                user_metadata[k.decode(bceutils.DEFAULT_ENCODING)] = \
+                    v.decode(bceutils.DEFAULT_ENCODING)
         response.metadata.user_metadata = user_metadata
         response.data = http_response
         return True
@@ -472,7 +470,8 @@ class BosClient(BceBaseClient):
         :param config:
         :return:
         """
-        response = self.get_object(bucket_name, key, range=range, config=config)
+        response = self.get_object(
+            bucket_name, key, range=range, config=config)
         s = response.data.read()
         response.data.close()
         return s
@@ -529,15 +528,15 @@ class BosClient(BceBaseClient):
               content_length=(int, int),
               content_md5=str)
     def append_object(self, bucket_name, key, data,
-                     content_md5,
-                     content_length,
-                     offset=None,
-                     content_type=None,
-                     user_metadata=None,
-                     content_sha256=None,
-                     storage_class=storage_class.STANDARD,
-                     user_headers=None,
-                     config=None):
+                      content_md5,
+                      content_length,
+                      offset=None,
+                      content_type=None,
+                      user_metadata=None,
+                      content_sha256=None,
+                      storage_class=storage_class.STANDARD,
+                      user_headers=None,
+                      config=None):
         """
         Put an appendable object to BOS or add content to an appendable object
 
@@ -579,8 +578,8 @@ class BosClient(BceBaseClient):
             config=config)
 
     @required(bucket_name=(str, str),
-                           key=str,
-                           data=(str, str))
+              key=str,
+              data=(str, str))
     def append_object_from_string(self, bucket_name, key, data,
                                   content_md5=None,
                                   offset=None,
@@ -595,13 +594,13 @@ class BosClient(BceBaseClient):
         or add content of string to an appendable object
         """
         if isinstance(data, str):
-            data = data.encode(baidubce.DEFAULT_ENCODING)
+            data = data.encode(bceutils.DEFAULT_ENCODING)
 
         fp = None
         try:
             fp = io.StringIO(data)
             if content_md5 is None:
-                content_md5 = utils.get_md5_from_fp(
+                content_md5 = bceutils.get_md5_from_fp(
                     fp, buf_size=self._get_config_parameter(config, 'recv_buf_size'))
 
             return self.append_object(bucket_name=bucket_name,
@@ -702,13 +701,13 @@ class BosClient(BceBaseClient):
             **HTTP Response**
         """
         if isinstance(data, str):
-            data = data.encode(baidubce.DEFAULT_ENCODING)
+            data = data.encode(bceutils.DEFAULT_ENCODING)
 
         fp = None
         try:
             fp = io.StringIO(data)
             if content_md5 is None:
-                content_md5 = utils.get_md5_from_fp(
+                content_md5 = bceutils.get_md5_from_fp(
                     fp, buf_size=self._get_config_parameter(config, 'recv_buf_size'))
             return self.put_object(bucket, key, fp,
                                    content_length=len(data),
@@ -733,7 +732,6 @@ class BosClient(BceBaseClient):
                              storage_class=storage_class.STANDARD,
                              user_headers=None,
                              config=None):
-
         """
         Put object and put content of file to the object
 
@@ -758,11 +756,13 @@ class BosClient(BceBaseClient):
                 content_length = fp.tell()
                 fp.seek(0)
             if content_md5 is None:
-                recv_buf_size = self._get_config_parameter(config, 'recv_buf_size')
-                content_md5 = utils.get_md5_from_fp(fp, length=content_length,
-                                                    buf_size=recv_buf_size)
+                recv_buf_size = self._get_config_parameter(
+                    config, 'recv_buf_size')
+                content_md5 = bceutils.get_md5_from_fp(fp, length=content_length,
+                                                       buf_size=recv_buf_size)
             if content_type is None:
-                content_type = utils.guess_content_type_by_file_name(file_name)
+                content_type = bceutils.guess_content_type_by_file_name(
+                    file_name)
             return self.put_object(bucket, key, fp,
                                    content_length=content_length,
                                    content_md5=content_md5,
@@ -811,7 +811,7 @@ class BosClient(BceBaseClient):
             user_metadata=user_metadata,
             storage_class=storage_class,
             user_headers=user_headers)
-        headers[http_headers.BCE_COPY_SOURCE] = utils.normalize_string(
+        headers[http_headers.BCE_COPY_SOURCE] = bceutils.normalize_string(
             '/%s/%s' % (source_bucket_name, source_key), False)
         if etag is not None:
             headers[http_headers.BCE_COPY_SOURCE_IF_MATCH] = etag
@@ -822,7 +822,8 @@ class BosClient(BceBaseClient):
 
         if copy_object_user_headers is not None:
             try:
-                headers = BosClient._get_user_header(headers, copy_object_user_headers, True)
+                headers = BosClient._get_user_header(
+                    headers, copy_object_user_headers, True)
             except Exception as e:
                 raise e
 
@@ -863,8 +864,8 @@ class BosClient(BceBaseClient):
             **HttpResponse Class**
         """
         key_list_json = [{'key': k} for k in key_list]
-        return self._send_request(http_methods.POST, 
-                                  bucket_name, 
+        return self._send_request(http_methods.POST,
+                                  bucket_name,
                                   body=json.dumps({'objects': key_list_json}),
                                   params={'delete': ''},
                                   config=config)
@@ -873,10 +874,10 @@ class BosClient(BceBaseClient):
               target_bucket=(str, str),
               target_prefix=(str, str))
     def put_bucket_logging(self,
-                          source_bucket,
-                          target_bucket,
-                          target_prefix=None,
-                          config=None):
+                           source_bucket,
+                           target_bucket,
+                           target_prefix=None,
+                           config=None):
         """
         Put Bucket Logging
 
@@ -888,11 +889,11 @@ class BosClient(BceBaseClient):
         :return:
             **HttpResponse Class**
         """
-        return self._send_request(http_methods.PUT, 
-                                  source_bucket, 
-                                  params={'logging': ''}, 
-                                  body=json.dumps({'targetBucket': target_bucket, 
-                                                  'targetPrefix': target_prefix}),
+        return self._send_request(http_methods.PUT,
+                                  source_bucket,
+                                  params={'logging': ''},
+                                  body=json.dumps({'targetBucket': target_bucket,
+                                                   'targetPrefix': target_prefix}),
                                   config=config)
 
     @required(bucket_name=(str, str))
@@ -925,10 +926,10 @@ class BosClient(BceBaseClient):
                                   params={'logging': ''},
                                   config=config)
 
-    @required(bucket_name=(str, str))    
-    def initiate_multipart_upload(self, 
-                                  bucket_name, 
-                                  key, 
+    @required(bucket_name=(str, str))
+    def initiate_multipart_upload(self,
+                                  bucket_name,
+                                  key,
                                   storage_class=storage_class.STANDARD,
                                   user_headers=None,
                                   config=None):
@@ -949,7 +950,8 @@ class BosClient(BceBaseClient):
 
         if user_headers is not None:
             try:
-                headers = BosClient._get_user_header(headers, user_headers, False)
+                headers = BosClient._get_user_header(
+                    headers, user_headers, False)
             except Exception as e:
                 raise e
 
@@ -1030,8 +1032,8 @@ class BosClient(BceBaseClient):
               part_number=int,
               part_size=(int, int),
               offset=(int, int))
-    def upload_part_copy(self, 
-                         source_bucket_name, source_key, 
+    def upload_part_copy(self,
+                         source_bucket_name, source_key,
                          target_bucket_name, target_key,
                          upload_id, part_number, part_size, offset,
                          etag=None,
@@ -1061,22 +1063,22 @@ class BosClient(BceBaseClient):
         """
 
         headers = self._prepare_object_headers(
-                         content_type=content_type,
-                         user_metadata=user_metadata)
-        headers[http_headers.BCE_COPY_SOURCE] = utils.normalize_string(
-                         "/%s/%s" % (source_bucket_name, source_key), False)
+            content_type=content_type,
+            user_metadata=user_metadata)
+        headers[http_headers.BCE_COPY_SOURCE] = bceutils.normalize_string(
+            "/%s/%s" % (source_bucket_name, source_key), False)
         range = """bytes=%d-%d""" % (offset, offset + part_size - 1)
         headers[http_headers.BCE_COPY_SOURCE_RANGE] = range
         if etag is not None:
             headers[http_headers.BCE_COPY_SOURCE_IF_MATCH] = etag
-        
+
         return self._send_request(
             http_methods.PUT,
             target_bucket_name,
             target_key,
             headers=headers,
             params={'partNumber': part_number, 'uploadId': upload_id},
-            config=config)    
+            config=config)
 
     @required(bucket_name=(str, str),
               key=str,
@@ -1211,7 +1213,7 @@ class BosClient(BceBaseClient):
         part_number_marker = None
         while True:
             response = self.list_parts(bucket_name, key, upload_id,
-                                      part_number_marker=part_number_marker, config=config)
+                                       part_number_marker=part_number_marker, config=config)
             for item in response.parts:
                 yield item
             if not response.is_truncated:
@@ -1304,10 +1306,12 @@ class BosClient(BceBaseClient):
             headers[http_headers.CONTENT_LENGTH] = str(content_length)
 
         if content_md5 is not None:
-            headers[http_headers.CONTENT_MD5] = utils.convert_to_standard_string(content_md5)
+            headers[http_headers.CONTENT_MD5] = bceutils.convert_to_standard_string(
+                content_md5)
 
         if content_type is not None:
-            headers[http_headers.CONTENT_TYPE] = utils.convert_to_standard_string(content_type)
+            headers[http_headers.CONTENT_TYPE] = bceutils.convert_to_standard_string(
+                content_type)
         else:
             headers[http_headers.CONTENT_TYPE] = http_content_types.OCTET_STREAM
 
@@ -1315,15 +1319,16 @@ class BosClient(BceBaseClient):
             headers[http_headers.BCE_CONTENT_SHA256] = content_sha256
 
         if etag is not None:
-            headers[http_headers.ETAG] = '"%s"' % utils.convert_to_standard_string(etag)
+            headers[http_headers.ETAG] = '"%s"' % bceutils.convert_to_standard_string(
+                etag)
 
         if user_metadata is not None:
             meta_size = 0
             if not isinstance(user_metadata, dict):
                 raise TypeError('user_metadata should be of type dict.')
             for k, v in list(user_metadata.items()):
-                k = utils.convert_to_standard_string(k)
-                v = utils.convert_to_standard_string(v)
+                k = bceutils.convert_to_standard_string(k)
+                v = bceutils.convert_to_standard_string(v)
                 normalized_key = http_headers.BCE_USER_METADATA_PREFIX + k
                 headers[normalized_key] = v
                 meta_size += len(normalized_key)
@@ -1337,12 +1342,12 @@ class BosClient(BceBaseClient):
 
         if user_headers is not None:
             try:
-                headers = BosClient._get_user_header(headers, user_headers, False)
+                headers = BosClient._get_user_header(
+                    headers, user_headers, False)
             except Exception as e:
                 raise e
 
         return headers
-
 
     @staticmethod
     def _get_user_header(headers, user_headers, is_copy=False):
@@ -1360,8 +1365,8 @@ class BosClient(BceBaseClient):
                                     http_headers.BCE_COPY_SOURCE_IF_MODIFIED_SINCE])
 
         for k, v in list(user_headers.items()):
-            k = utils.convert_to_standard_string(k)
-            v = utils.convert_to_standard_string(v)
+            k = bceutils.convert_to_standard_string(k)
+            v = bceutils.convert_to_standard_string(v)
             if k in user_headers_set:
                 headers[k] = v
         return headers
@@ -1374,10 +1379,9 @@ class BosClient(BceBaseClient):
             return result
         return getattr(self.config, attr)
 
-
     @staticmethod
     def _get_path(config, bucket_name=None, key=None):
-        return utils.append_uri(bos.URL_PREFIX, bucket_name, key)
+        return bceutils.append_uri(bos.URL_PREFIX, bucket_name, key)
 
     def _merge_config(self, config):
         if config is None:
@@ -1400,7 +1404,7 @@ class BosClient(BceBaseClient):
         if config.security_token is not None:
             headers = headers or {}
             headers[http_headers.STS_SECURITY_TOKEN] = config.security_token
-            
+
         return bce_http_client.send_request(
             config, bce_v1_signer.sign, [handler.parse_error, body_parser],
             http_method, path, body, headers, params)

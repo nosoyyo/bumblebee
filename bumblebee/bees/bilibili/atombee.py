@@ -6,9 +6,6 @@ from bees import AbstractBee
 from utils import SelfAssemlingClass
 from utils.bce import BosClient, BceCredentials, BceClientConfiguration
 
-# degub
-file_name = '3ee1d846b6c14ec285afaa5aecdd9aca.mp4'
-
 
 class PreuploadResp(SelfAssemlingClass):
     pass
@@ -17,6 +14,14 @@ class PreuploadResp(SelfAssemlingClass):
 class PutObjectResp(SelfAssemlingClass):
     pass
 
+# from bees import BiliAtomBee
+# degub 
+file_name = '3ee1d846b6c14ec285afaa5aecdd9aca.mp4'
+from bees.bilibili import VideoFile
+
+vf = VideoFile(file_name)
+# bab = BiliAtomBee(vf)
+# debug end
 
 class BiliAtomBee():
 
