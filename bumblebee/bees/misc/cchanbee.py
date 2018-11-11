@@ -26,7 +26,7 @@ class CChanBee():
         soup = BeautifulSoup(resp.text, 'lxml').select('div.box-general-list')
 
         soup = self.goodCatsFilter(soup)
-        self.saveTitles(soup)
+        self.grabInfo(soup)
 
         # get the raw URI of video pages
         self.top20 = [item.a['href'] for item in soup]
@@ -40,13 +40,14 @@ class CChanBee():
         # see if any changes occured
         hkeys = self.r.hkeys('ccb_init')
         hkeys.sort()
+        last_probe = hkeys[-2]
         if len(hkeys) >= 2:
-            last_state = sumChars(self.r.hget('ccb_init', hkeys[-2]))
+            last_state = sumChars(self.r.hget('ccb_init', last_probe))
         else:
             last_state = ''
         this_state = sumChars(self.top20)
         change_flag = not bool(this_state == last_state)
-        print(f'change occured since last probe: {change_flag}')
+        print(f'change occured since {last_probe}: {change_flag}')
         if change_flag:
             # grab stuff while in need
             flag = self.checkIfGrabbed()
@@ -58,14 +59,25 @@ class CChanBee():
             since_time = f'{since.hour}:{since.minute}:{since.second}'
             print(f'nothing changed since {since_date} {since_time}')
 
-    def saveTitles(self, soup):
+    def grabInfo(self, soup):
 
         for item in soup:
             URI = sumChars(item.a['href']).replace('watch', '')
             title = item.select('a.anchor-content-general-list')[0].text
             self.r.hset('video_titles', URI, title)
+            print(f'\n{URI} title {title} saved.')
 
-        print(f'{len(soup)} titles saved.')
+            # grab desc
+            print('grabbing desc...')
+            endpoint = self.config.endpoints['watch'] + URI
+            resp = self.bee._GET(endpoint)
+            soup = BeautifulSoup(resp.text, 'lxml')
+            desc = soup.select('div.auto-link')[0].text
+            desc = desc.replace('\r', '\n')
+            self.r.hset('video_desc', URI, desc)
+            print(f'{URI} desc {desc} saved.\n')
+
+        print(f'{len(soup)} video info grabbed.')
 
     def goodCatsFilter(self, soup):
         result = []

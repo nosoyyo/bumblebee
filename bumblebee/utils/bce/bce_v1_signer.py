@@ -28,6 +28,11 @@ from . import bceutils
 
 
 _logger = logging.getLogger(__name__)
+logging.basicConfig(
+    filename='var/log/signer.log',
+    level=logging.INFO,
+    format='%(asctime)s %(filename)s\
+    [line:%(lineno)d] %(levelname)s %(message)s')
 
 
 def _get_canonical_headers(headers, headers_to_sign=None):
@@ -58,7 +63,7 @@ def sign(credentials, http_method, path, headers, params,
     Create the authorization
     """
 
-    _logger.debug(f'Sign params: {http_method}, {path}, {headers}, {params}, \
+    logging.debug(f'Sign params: {http_method}, {path}, {headers}, {params}, \
     {timestamp}, {expiration_in_seconds}, {headers_to_sign}')
 
     headers = headers or {}
@@ -71,18 +76,17 @@ def sign(credentials, http_method, path, headers, params,
     sign_key = hmac.new(
         credentials.secret_access_key.encode(),
         sign_key_info.encode(),
-        hashlib.sha256).hexdigest()
+        'sha256').hexdigest()
 
     canonical_uri = path
     canonical_querystring = bceutils.get_canonical_querystring(params, True)
-
     canonical_headers = _get_canonical_headers(headers, headers_to_sign)
 
-    string_to_sign = '\n'.join(
+    canonical_request = '\n'.join(
         [http_method, canonical_uri, canonical_querystring, canonical_headers])
 
-    sign_result = hmac.new(sign_key.encode(), string_to_sign.encode(),
-                           hashlib.sha256).hexdigest()
+    sign_result = hmac.new(sign_key.encode(), canonical_request.encode(),
+                           'sha256').hexdigest()
 
     if headers_to_sign:
         result = '%s/%s/%s' % (sign_key_info,
@@ -90,7 +94,7 @@ def sign(credentials, http_method, path, headers, params,
     else:
         result = '%s//%s' % (sign_key_info, sign_result)
 
-    _logger.debug('sign_key=[%s] sign_string=[%d bytes][ %s ]' %
-                  (sign_key, len(string_to_sign), string_to_sign))
-    _logger.debug('result=%s' % result)
+    logging.debug('sign_key=[%s] sign_string=[%d bytes][ %s ]' %
+                  (sign_key, len(canonical_request), canonical_request))
+    logging.debug('result=%s' % result)
     return result

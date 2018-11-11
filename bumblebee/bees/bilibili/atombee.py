@@ -1,10 +1,15 @@
-import os
 import json
+import logging
 
 from config import Bilibili
 from bees import AbstractBee
 from utils import SelfAssemlingClass
 from utils.bce import BosClient, BceCredentials, BceClientConfiguration
+
+logging.basicConfig(
+    filename='var/log/signer.log',
+    level=logging.INFO,
+    format='%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s')
 
 
 class PreuploadResp(SelfAssemlingClass):
@@ -14,18 +19,10 @@ class PreuploadResp(SelfAssemlingClass):
 class PutObjectResp(SelfAssemlingClass):
     pass
 
-# from bees import BiliAtomBee
-# degub 
-file_name = '3ee1d846b6c14ec285afaa5aecdd9aca.mp4'
-from bees.bilibili import VideoFile
-
-vf = VideoFile(file_name)
-# bab = BiliAtomBee(vf)
-# debug end
 
 class BiliAtomBee():
 
-    config = Bilibili()
+    config = Bilibili(debug=True)
     bee = AbstractBee(config)
     bee.headers = config.headers.copy()
 
@@ -33,6 +30,7 @@ class BiliAtomBee():
         self.file = file_obj
         self.config.preupload_params['name'] = file_obj.name
         self.config.preupload_params['size'] = file_obj.size
+        print(f'bab now load up {self.file.name}, ready to fire!')
 
     def preUpload(self) -> json:
         '''
@@ -42,17 +40,15 @@ class BiliAtomBee():
         return self.bee._XGET(self.config.endpoints['preupload'],
                               _params=self.config.preupload_params)
 
-    def upload(self):
+    def process(self):
 
         middle = PreuploadResp(self.preUpload())
         # debug
         self.middle = middle
         self.bee.headers.update(middle.fetch_headers)
         po_resp = self.putObject(middle)
-        po_result = PutObjectResp(json.loads(po_resp.text))
-        self.postPO(middle)
-
-    def detectSTSAuthExpire(self):
+        # po_result = PutObjectResp(json.loads(po_resp.text))
+        # self.postPO(middle)
         '''
         check if time() is bigger than middle.Expiration
         '''
@@ -64,19 +60,19 @@ class BiliAtomBee():
 
         : return: resp of requests
         '''
-        baidubce_config = BceClientConfiguration(
+        bce_config = BceClientConfiguration(
             credentials=BceCredentials(
                 access_key_id=middle.AccessKeyId,
                 secret_access_key=middle.SecretAccessKey
             ),
             endpoint=middle.endpoint
         )
-        bos_client = BosClient(baidubce_config)
+        bce_config.security_token = middle.SessionToken
+        bos_client = BosClient(bce_config)
         resp = bos_client.put_object_from_file(
             middle.bucket,
             middle.key,
             self.file.full_name,
-            content_length=self.file.size,
         )
         return resp
 
@@ -89,35 +85,47 @@ class BiliAtomBee():
         _params['output'] = 'json'
         _params['profile'] = 'ugcupos/fetch'
         _params['biz_id'] = middle.biz_id
-        endpoint = self.endpoints['postPO'] + middle.key
+        endpoint = self.config.endpoints['postPO'] + middle.key
         resp = self.bee._POST(endpoint, headers=h, _params=_params)
         return json.loads(resp.text)
 
     def preAdd(self):
-        resp = self.bee._XGET(self.pre_add)
 
-    def add(self, middle, po_result):
+        endpoint = self.config.endpoints['pre_add']
+        resp = self.bee._XGET(endpoint)
+
+    def add(self, middle)->int:
         '''
+        :return: aid
+
+        :param :
         '''
-        csrf = 'bb1b31e6c8c70215d0d3f34e6beb32f6'
-        add_url = Bilibili.member
-        add_params = {'csrf': csrf}
+        csrf = self.bee.cookies['bili_jct']
+        endpoint = self.config.endpoints['add'] + f'?csrf={csrf}'
+        content_type = {'Content-Type': 'application/json;charset=UTF-8'}
+        self.bee.headers.update(content_type)
 
-        some_title = self.bee.r.hget(
-            'video_titles', self.URI)
-        desc = '一段发人深省的对话'
-        middle = {'bili_filename': ''}
+        # source = self.bee.r.hget('video_source', self.file.URI)
+        title = self.bee.r.hget('video_titles', self.file.URI)
+        desc = self.bee.r.hget('video_desc', self.file.URI)
+        # TODO add some elegancy
+        desc = desc['200']
 
-        payload = {'copyright': 1,
-                   'videos': [{'filename': middle['bili_filename'],
-                               'title': some_title,
-                               'desc': desc}],
+        payload = {'copyright': 2,
+                   'videos': [{'filename': middle.key.replace('.mp4', ''),
+                               'title': self.file.URI,
+                               'desc': ''}],
                    'no_reprint': 1,
-                   'tid': 21,
+                   'source': f"https://www.cchan.tv/watch/{self.file.URI}",
+                   'tid': 157,
                    'cover': '',
-                   'title': 'test',
-                   'tag': '日常',
+                   'title': title,
+                   'tag': '美妆',
                    'desc_format_id': 0,
                    'desc': desc,
                    'dynamic': '',
                    'subtitle': {'open': 0, 'lan': ''}}
+
+        self.preAdd()
+        resp = self.bee._POST(endpoint, _data=payload)
+        return resp['data']['aid']

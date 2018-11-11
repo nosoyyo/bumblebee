@@ -8,5 +8,6 @@ from .safecheck import safeCheck, slowDown
 
 
 class SelfAssemlingClass():
-    def __init__(self, doc):
-        self.__dict__ = doc
+    def __init__(self, doc=None):
+        if doc:
+            self.__dict__ = doc

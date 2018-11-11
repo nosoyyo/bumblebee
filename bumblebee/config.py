@@ -20,7 +20,7 @@ class Bilibili(Headers):
     cpool = redis.ConnectionPool(
         host='localhost', port=6379, decode_responses=True, db=2)
 
-    cookies_file = 'cookies/bilibili.json'
+    # cookies_file = 'cookies/bilibili.json'
     cookies_domain = '.bilibili.com'
     member = 'https://member.bilibili.com/'
     default_dir = 'bilibee/cchan'
@@ -31,17 +31,25 @@ class Bilibili(Headers):
                         'profile': 'ugcupos/fetch',
                         'ssl': 0}
 
-    def __init__(self):
+    def __init__(self, debug=True):
 
-        # weird...
+        if debug:
+            self.cookies_file = 'cookies/bilitest.json'
+        else:
+            self.cookies_file = 'cookies/bilibili.json'
+
         self.headers = self.headers.copy()
-
         self.headers['referer'] = f'{self.member}video/upload.html'
         self.headers['x-requested-with'] = 'XMLHttpRequest'
 
+        self.bce = {}
+        self.bce['host'] = 'https://hk-2.bcebos.com'
+        self.bce['bucket'] = 'bvcupcdnbosxg'
+        self.bce['querystring'] = 'uploads'
+
         self.endpoints = {}
         self.endpoints['preupload'] = f'{self.member}/preupload'
-        self.endpoints['preAdd'] = f'{self.member}/x/geetest/pre/add'
+        self.endpoints['pre_add'] = f'{self.member}/x/geetest/pre/add'
         self.endpoints['add'] = f'{self.member}/x/vu/web/add'
         self.endpoints['postPO'] = 'https://upos-hz-upcdnws.acgvideo.com/ugc/'
 

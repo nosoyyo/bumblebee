@@ -83,7 +83,9 @@ def get_canonical_time(timestamp=0):
     :return:
         **string of canonical_time**
     """
-    if timestamp == 0:
+    if isinstance(timestamp, str):
+        return timestamp
+    elif timestamp == 0:
         utctime = datetime.datetime.utcnow()
     else:
         utctime = datetime.datetime.utcfromtimestamp(timestamp)
@@ -94,7 +96,7 @@ def get_canonical_time(timestamp=0):
 
 def is_ip(s):
     """
-    Check a string whether is a legal ip address.
+    Check a string whether is a legal IPv4 address.
 
     :type s: string
     :param s: None
@@ -205,6 +207,7 @@ _NORMALIZED_CHAR_LIST = _get_normalized_char_list()
 
 def normalize_string(in_str, encoding_slash=True):
     """
+    i.e. UriEncode()
     Encode in_str.
     When encoding_slash is True, don't encode skip_chars, vice versa.
 

@@ -62,20 +62,23 @@ class AbstractBee():
             raise BumbleBeeError(1002)
 
     @utils.slowDown
-    def _POST(self, url: str, headers=None, _params: dict = None):
+    def _POST(self, url: str, headers=None, _data=None, _params=None):
         '''
         :return ?: may return a `dict` or an `int` as http code
-        :param _params: {'include':['a,b']}
+
+        :param _data: <dict> the data that requests.post needs.
         '''
 
         headers = headers or self.headers
 
+        if _data is None:
+            _data = {}
         if _params is None:
             _params = {}
 
         try:
             resp = requests.post(url, cookies=self.cookies,
-                                 headers=headers, params=_params)
+                                 headers=headers, json=_data, params=_params)
         except Exception as e:
             raise BumbleBeeError(1003)
         finally:
