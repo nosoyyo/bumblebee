@@ -22,6 +22,7 @@ class BceResponse(object):
     """
 
     """
+
     def __init__(self):
         self.metadata = bceutils.Expando()
 

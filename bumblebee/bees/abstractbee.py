@@ -11,6 +11,7 @@ class AbstractBee():
     '''
     Gerenralized crawler.
     '''
+    s = requests.Session()
 
     def __init__(self, site_obj):
 
@@ -37,8 +38,8 @@ class AbstractBee():
 
         try:
             occur = time.time()
-            resp = requests.get(url, cookies=self.cookies,
-                                headers=self.headers, params=_params)
+            resp = self.s.get(url, cookies=self.cookies,
+                              headers=self.headers, params=_params)
         except Exception as e:
             print(f'some {e} happens during _GET')
         finally:
@@ -62,7 +63,7 @@ class AbstractBee():
             raise BumbleBeeError(1002)
 
     @utils.slowDown
-    def _POST(self, url: str, headers=None, _data=None, _params=None):
+    def _POST(self, url: str, headers=None, _data=None):
         '''
         :return ?: may return a `dict` or an `int` as http code
 
@@ -73,13 +74,11 @@ class AbstractBee():
 
         if _data is None:
             _data = {}
-        if _params is None:
-            _params = {}
 
         try:
-            resp = requests.post(url, cookies=self.cookies,
-                                 headers=headers, json=_data, params=_params)
-        except Exception as e:
+            resp = self.s.post(url, cookies=self.cookies,
+                               headers=headers, json=_data)
+        except Exception:
             raise BumbleBeeError(1003)
         finally:
             utils.sigmaActions(self.r, time.time())

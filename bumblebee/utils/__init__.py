@@ -5,9 +5,10 @@ from .pipeline import MongoDBPipeline
 from .pinsheaders import pins_headers
 from .sigmaactions import sigmaActions
 from .safecheck import safeCheck, slowDown
+from .fromtimestamp import fromTimeStamp
 
 
-class SelfAssemlingClass():
+class SelfAssemblingClass():
     def __init__(self, doc=None):
         if doc:
             self.__dict__ = doc

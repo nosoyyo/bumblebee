@@ -1,6 +1,9 @@
 import redis
 
 
+DEBUG = False
+
+
 class ConfigError(Exception):
 
     def __init__(self, msg):
@@ -22,7 +25,7 @@ class Bilibili(Headers):
 
     # cookies_file = 'cookies/bilibili.json'
     cookies_domain = '.bilibili.com'
-    member = 'https://member.bilibili.com/'
+    member = 'https://member.bilibili.com'
     default_dir = 'bilibee/cchan'
 
     preupload_params = {'os': 'bos',
@@ -31,7 +34,7 @@ class Bilibili(Headers):
                         'profile': 'ugcupos/fetch',
                         'ssl': 0}
 
-    def __init__(self, debug=True):
+    def __init__(self, debug=DEBUG):
 
         if debug:
             self.cookies_file = 'cookies/bilitest.json'

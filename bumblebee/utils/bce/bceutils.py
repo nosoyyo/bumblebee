@@ -33,6 +33,7 @@ from Crypto.Cipher import AES
 from . import protocol
 from . import http_headers
 
+
 DEFAULT_ENCODING = "UTF-8"
 
 
@@ -337,6 +338,7 @@ def print_object(obj):
     return '{%s}' % ','.join(tmp)
 
 
+'''
 class Expando(object):
     """
     Expandable class
@@ -353,6 +355,17 @@ class Expando(object):
 
     def __repr__(self):
         return print_object(self)
+'''
+
+
+class SelfAssemblingClass():
+    def __init__(self, doc=None):
+        if doc:
+            self.__dict__ = doc
+
+
+class Expando(SelfAssemblingClass):
+    pass
 
 
 def dict_to_python_object(d):

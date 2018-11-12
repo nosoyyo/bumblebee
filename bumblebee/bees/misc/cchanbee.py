@@ -1,12 +1,11 @@
 import os
 import time
 import redis
-import datetime
 from bs4 import BeautifulSoup
 
 from config import CChan
 from bees import AbstractBee
-from utils import sumChars
+from utils import sumChars, fromTimeStamp
 
 
 class CChanBee():
@@ -26,7 +25,10 @@ class CChanBee():
         soup = BeautifulSoup(resp.text, 'lxml').select('div.box-general-list')
 
         soup = self.goodCatsFilter(soup)
-        self.grabInfo(soup)
+        if self.grabInfo(soup):
+            print(f'some info updated.')
+        else:
+            print('all info already have.')
 
         # get the raw URI of video pages
         self.top20 = [item.a['href'] for item in soup]
@@ -47,37 +49,47 @@ class CChanBee():
             last_state = ''
         this_state = sumChars(self.top20)
         change_flag = not bool(this_state == last_state)
-        print(f'change occured since {last_probe}: {change_flag}')
+
         if change_flag:
             # grab stuff while in need
             flag = self.checkIfGrabbed()
             if flag:
                 self.grab()
         else:
-            since = datetime.datetime.fromtimestamp(float(hkeys[-2]))
-            since_date = f'{since.year}.{since.month}.{since.day}'
-            since_time = f'{since.hour}:{since.minute}:{since.second}'
-            print(f'nothing changed since {since_date} {since_time}')
+            since = fromTimeStamp(last_probe)
+            print(f'nothing changed since {since[0]} {since[1]}')
 
     def grabInfo(self, soup):
 
+        flag = False
+
         for item in soup:
             URI = sumChars(item.a['href']).replace('watch', '')
-            title = item.select('a.anchor-content-general-list')[0].text
-            self.r.hset('video_titles', URI, title)
-            print(f'\n{URI} title {title} saved.')
+            source = self.r.hget('video_source', URI)
+            title = self.r.hget('video_title', URI)
+            desc = self.r.hget('video_desc', URI)
 
-            # grab desc
-            print('grabbing desc...')
-            endpoint = self.config.endpoints['watch'] + URI
-            resp = self.bee._GET(endpoint)
-            soup = BeautifulSoup(resp.text, 'lxml')
-            desc = soup.select('div.auto-link')[0].text
-            desc = desc.replace('\r', '\n')
-            self.r.hset('video_desc', URI, desc)
-            print(f'{URI} desc {desc} saved.\n')
+            if not source:
+                source = f'https://www.cchan.tv/watch/{URI}'
+                self.r.hset('video_source', URI, source)
+                print(f'\n{URI} source {source} saved.')
+                flag = True
+            if not title:
+                title = item.select('a.anchor-content-general-list')[0].text
+                self.r.hset('video_title', URI, title)
+                print(f'\n{URI} title {title} saved.')
+                flag = True
+            if not desc:
+                endpoint = self.config.endpoints['watch'] + URI
+                resp = self.bee._GET(endpoint)
+                soup = BeautifulSoup(resp.text, 'lxml')
+                desc = soup.select('div.auto-link')[0].text
+                desc = desc.replace('\r', '\n')
+                self.r.hset('video_desc', URI, desc)
+                print(f'{URI} desc {desc} saved.\n')
+                flag = True
 
-        print(f'{len(soup)} video info grabbed.')
+        return flag
 
     def goodCatsFilter(self, soup):
         result = []
