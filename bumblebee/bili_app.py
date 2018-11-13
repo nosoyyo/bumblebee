@@ -107,9 +107,13 @@ def job():
             vf = VideoFile(v)
             bab = BiliAtomBee(vf)
             # upload one once
-            if bab.process():
+            flag = bab.process()
+            if flag:
                 r.rpush('upload_log', time.time())
                 break
+        if flag:
+            break
+
         else:
             aid = r.hget('video_aid', URI)
             print(f'video file {v} already uploaded, aid {aid}')

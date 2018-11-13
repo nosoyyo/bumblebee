@@ -4,6 +4,7 @@ import redis
 import requests
 
 import utils
+from core.respadapter import GeneralResp
 from bees.exceptions import BumbleBeeError
 
 
@@ -29,72 +30,69 @@ class AbstractBee():
         pass
 
     @utils.slowDown
-    def _GET(self, url: str, _params: dict = None) -> dict:
+    def _GET(self,
+             url: str,
+             headers=None,
+             _params: dict = None,
+             **kwargs) -> dict:
         '''
-        :param _params: {'include':['a,b']}
+        :param _params: <dict>
         '''
-        if _params is None:
-            _params = {}
+
+        headers = headers or self.headers.copy()
+        _params = _params or {}
 
         try:
             occur = time.time()
             resp = self.s.get(url, cookies=self.cookies,
-                              headers=self.headers, params=_params)
+                              headers=headers, params=_params)
         except Exception as e:
             print(f'some {e} happens during _GET')
         finally:
             utils.sigmaActions(self.r, occur)
 
-        return resp
+        return GeneralResp(resp)
 
     @utils.slowDown
-    def _XGET(self, url: str, _params: dict = None) -> dict:
+    def _XGET(self, url: str, _params: dict = None, **kwargs) -> dict:
         '''
-        :param _params: {'include':['a,b']}
+        :param _params: <dict>
         '''
+        if 'headers' in kwargs:
+            headers = kwargs['headers']
+        else:
+            headers = self.headers.copy()
+        accept = {'Accept': 'application/json, text/plain, */*'}
+        headers.update(accept)
+        resp = self._GET(url, _params=_params, headers=headers)
 
-        resp = self._GET(url, _params=_params)
-
-        try:
-            result = json.loads(resp.text)
-            print(f'stuff grabbed from {url}.')
-            return result
-        except json.JSONDecodeError:
-            raise BumbleBeeError(1002)
+        return GeneralResp(resp)
 
     @utils.slowDown
-    def _POST(self, url: str, headers=None, _data=None):
+    def _POST(self, url: str, headers=None, _data=None, _params=None):
         '''
         :return ?: may return a `dict` or an `int` as http code
 
         :param _data: <dict> the data that requests.post needs.
         '''
 
-        headers = headers or self.headers
+        headers = headers or self.headers.copy()
 
-        if _data is None:
-            _data = {}
+        content_type = {'Content-Type': 'application/json;charset=UTF-8'}
+        headers.update(content_type)
+        print(f"Content-Type: {headers['Content-Type']}")
+
+        _data = _data or {}
+        _params = _params or {}
 
         try:
             resp = self.s.post(url, cookies=self.cookies,
                                headers=headers, json=_data)
+            return GeneralResp(resp)
         except Exception:
-            raise BumbleBeeError(1003)
+            raise BumbleBeeError()
         finally:
             utils.sigmaActions(self.r, time.time())
-
-        if resp.status_code == 200:
-            try:
-                result = json.loads(resp.text)
-                print(f'stuff posted to {url}')
-                return result
-            except json.JSONDecodeError:
-                print('Cannot decode JSON for', url)
-                raise BumbleBeeError(1004)
-        elif resp.status_code == 204:
-            return 204
-        else:
-            return resp
 
     @utils.slowDown
     def _DELETE(self, url: str) -> str:

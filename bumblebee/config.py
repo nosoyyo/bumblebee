@@ -1,7 +1,7 @@
 import redis
 
 
-DEBUG = False
+DEBUG = True
 
 
 class ConfigError(Exception):
@@ -25,6 +25,7 @@ class Bilibili(Headers):
 
     # cookies_file = 'cookies/bilibili.json'
     cookies_domain = '.bilibili.com'
+    account = 'https://account.bilibili.com'
     member = 'https://member.bilibili.com'
     default_dir = 'bilibee/cchan'
 
@@ -51,6 +52,8 @@ class Bilibili(Headers):
         self.bce['querystring'] = 'uploads'
 
         self.endpoints = {}
+        self.endpoints['user_info'] = f'{self.account}/home/userInfo'
+
         self.endpoints['preupload'] = f'{self.member}/preupload'
         self.endpoints['pre_add'] = f'{self.member}/x/geetest/pre/add'
         self.endpoints['add'] = f'{self.member}/x/vu/web/add'

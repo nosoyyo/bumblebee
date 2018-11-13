@@ -42,6 +42,10 @@ class BiliAtomBee():
         self.config.preupload_params['size'] = file_obj.size
         print(f'bab now load up {self.file.name}, ready to fire!')
 
+    def _whoami(self):
+        endpoint = self.config.endpoints['user_info']
+        uname = self.bee._XGET(endpoint)
+
     def process(self)->bool:
 
         flag = False
@@ -128,8 +132,7 @@ class BiliAtomBee():
         _params['profile'] = 'ugcupos/fetch'
         _params['biz_id'] = middle.biz_id
         endpoint = self.config.endpoints['postPO'] + middle.key
-        resp = self.bee._POST(endpoint, headers=h, _params=_params)
-        return json.loads(resp.text)
+        return self.bee._POST(endpoint, headers=h, _params=_params)
 
     def preAdd(self) -> bool:
 
@@ -186,9 +189,6 @@ class BiliAtomBee():
         csrf = self.bee.cookies['bili_jct']
         print(f'csrf: {csrf}')
         endpoint = self.config.endpoints['add'] + f'?csrf={csrf}'
-        content_type = {'Content-Type': 'application/json;charset=UTF-8'}
-        self.bee.headers.update(content_type)
-        print(f"Content-Type: {self.bee.headers['Content-Type']}")
         payload = self.buildPayload(middle)
         # debug
         print(f'payload : {payload}')
