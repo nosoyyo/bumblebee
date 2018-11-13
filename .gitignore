@@ -1,5 +1,7 @@
 # User Custom
 
+debug/
+*.pickle
 cookies/
 *.json
 .vscode

@@ -1,0 +1,35 @@
+import os
+import json
+import pickle
+
+
+def loadIfJson(_input: str) -> bool:
+    if isinstance(_input, bytes):
+        _input = _input.decode()
+    try:
+        return json.loads(_input)
+    except Exception:
+        return False
+
+
+def fastPickel(arg=None, ind=None):
+    print('if pass int, will always used as indicator not filename!')
+    objs = os.listdir('debug')
+    objs = [int(i.split('.')[0]) for i in objs]
+    objs.sort()
+    if not arg:
+        return objs
+    elif isinstance(arg, int):
+        fastPickel(ind=arg)
+    elif ind and not obj:
+        file_name = f'{objs[ind]}.pickle'
+        with open(file_name, 'rb') as f:
+            return pickle.load(f)
+    else:
+        try:
+            file_name = f'debug/{objs[-1] + 1}.pickle'
+            with open(f'{file_name}', 'wb') as f:
+                pickle.dump(arg, f)
+            return f'{arg} dumped as {file_name}'
+        except Exception:
+            print('failed')
