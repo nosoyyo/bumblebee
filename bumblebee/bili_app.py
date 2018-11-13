@@ -11,26 +11,28 @@ from bees import BiliAtomBee, CChanBee
 
 cchan_config = CChan()
 WORKABLE = True
-INTERVAL = 60 * 60 * 6
+UPLOAD_INTERVAL = 60 * 60 * 6
 
 
 def checkCChan():
+    now = fromTimeStamp()
+    print(f'checkCChan wake up at {now}')
     CChanBee()
 
 
 def checkIfWorkable():
     '''
-    check WORKABLE and INTERVAL
+    check WORKABLE
     '''
     flag = False
-    global WORKABLE, INTERVAL
+    global WORKABLE
     now = datetime.now()
-    if 2 < now.hour < 9:
+    if 0 < now.hour < 8:
         WORKABLE = False
         flag = False
     else:
-        if:
-            pass
+        flag = True
+    return flag
 
 
 def getAllUploadedVideos(r):
@@ -62,10 +64,11 @@ def checkUploadStatus():
     '''
 
 
-def main():
+def job():
     '''
     processes:
 
+    -1. check if workable
     0. CChanBee() check for new stuff & download
     1. get all uploaded videos for
     2. check local storage
@@ -73,8 +76,20 @@ def main():
 
     '''
 
+    flag = False
+    now = fromTimeStamp()
+    print(f'main job wake up at {now}')
+    resp = BiliAtomBee.bee._XGET('https://account.bilibili.com/home/userInfo')
+    if 'data' in resp:
+        uname = resp['data']['uname']
+        print(f'preparing upload under name of {uname}')
+
+    # -1
+    if not checkIfWorkable():
+        print(f'{fromTimeStamp()} is not a workable time!')
+        return False
+
     r = CChanBee.r
-    r.hset('bili_app_log', time.time())
 
     # 0
     CChanBee()
@@ -86,15 +101,30 @@ def main():
     videos = checkLocalStorage(cchan_config)
 
     # 3
-    for vf in videos:
-        URI = vf.split('.')[0]
+    for v in videos:
+        URI = v.split('.')[0]
         if URI not in uploaded:
+            vf = VideoFile(v)
             bab = BiliAtomBee(vf)
-            bab.process()
+            # upload one once
+            if bab.process():
+                r.rpush('upload_log', time.time())
+                break
         else:
-            aid = r.hget('video_upload', URI)
-            print(f'video file {vf} already uploaded, aid {aid}')
+            aid = r.hget('video_aid', URI)
+            print(f'video file {v} already uploaded, aid {aid}')
+
+    return flag
 
 
 schedule.every().hour.do(checkCChan)
-schedule.every(3).hours.do(main)
+schedule.every(5).hours.do(job)
+
+
+def main():
+    while True:
+        schedule.run_pending()
+
+
+if __name__ == '__main__':
+    main()

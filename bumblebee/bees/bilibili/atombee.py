@@ -31,7 +31,7 @@ class BiliAtomBee():
     self.process() is the only method exposed.
     '''
 
-    config = Bilibili(debug=True)
+    config = Bilibili()
     bee = AbstractBee(config)
     bee.headers = config.headers.copy()
     r = bee.r
@@ -64,19 +64,21 @@ class BiliAtomBee():
         # check if time() is bigger than middle.Expiration
 
         aid = self.add(middle)
-        # simple check
-        if isinstance(aid) and len(aid) == 8:
-            is_aid_ok = True
-        else:
-            print(f'WARNING! aid {aid} is questionable!')
-            flag = False
+        if aid:
+            # simple check
+            if isinstance(aid, int) and len(aid) == 8:
+                is_aid_ok = True
+            else:
+                print(f'WARNING! aid {aid} is questionable!')
+                flag = False
 
-        if is_aid_ok:
-            now = fromTimeStamp()
-            self.r.hset('video_upload', now, {self.file.URI: aid})
-            print(f'{self.file.URI} succesfully uploaded at {now}.')
-            print(f'aid: {aid}')
-            flag = True
+            if is_aid_ok:
+                now = fromTimeStamp()
+                self.r.hset('video_upload', now, {self.file.URI: aid})
+                self.r.hset('video_aid', self.file.URI, aid)
+                print(f'{self.file.URI} succesfully uploaded at {now}.')
+                print(f'aid: {aid}')
+                flag = True
         else:
             print(f'failed getting aid.')
             flag = False
@@ -192,6 +194,11 @@ class BiliAtomBee():
         print(f'payload : {payload}')
         # TODO fix this
         # print(f'preAdd success: {self.preAdd()}')
-        resp = requests.post(endpoint, json=payload, cookies=self.bee.cookies)
-        aid = json.loads(resp.text)['data']['aid']
-        return aid
+        try:
+            resp = requests.post(endpoint, json=payload,
+                                 cookies=self.bee.cookies)
+            if 'data' in resp.text:
+                aid = json.loads(resp.text)['data']['aid']
+                return int(aid)
+        except Exception:
+            return 0
