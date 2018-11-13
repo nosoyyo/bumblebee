@@ -13,6 +13,9 @@ from bees.exceptions import BumbleBeeError
 class AbstractBee():
     '''
     Gerenralized crawler.
+
+    :method _SOUP: return BeautifulSoup(resp.text)
+    :method _DOWNLOAD: return bytes or save file_name to local storage.
     '''
     s = requests.Session()
 
