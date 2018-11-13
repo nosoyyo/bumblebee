@@ -1,7 +1,9 @@
+import os
 import json
 import time
 import redis
 import requests
+from bs4 import BeautifulSoup
 
 import utils
 from core.respadapter import GeneralResp
@@ -38,7 +40,7 @@ class AbstractBee():
         '''
         :param _params: <dict>
         '''
-
+        resp = None
         headers = headers or self.headers.copy()
         _params = _params or {}
 
@@ -51,7 +53,10 @@ class AbstractBee():
         finally:
             utils.sigmaActions(self.r, occur)
 
-        return GeneralResp(resp)
+        if 'file' in kwargs:
+            return resp.content
+        else:
+            return GeneralResp(resp)
 
     @utils.slowDown
     def _XGET(self, url: str, _params: dict = None, **kwargs) -> dict:
@@ -101,3 +106,26 @@ class AbstractBee():
     @utils.slowDown
     def _PUT(self, url: str) -> str:
         raise NotImplementedError
+
+    def _SOUP(self, url: str):
+        resp = self._GET(url)
+        return BeautifulSoup(resp._content.decode(), 'lxml')
+
+    def _DOWNLOAD(self, url: str, file_name=None):
+        '''
+        use this method to download files
+        '''
+        started = time.time()
+        resp = self._GET(url, file=True)
+        if not file_name:
+            return resp
+        else:
+            with open(file_name, 'wb') as f:
+                f.write(resp)
+            print(f'{file_name} downloaded from {url}')
+
+            # stats
+            usage = time.time() - started
+            size = os.path.getsize(file_name)
+            print(f'{size} bytes, {usage:.1f} seconds. \n\
+{size / usage / 1024:.1f} kb/s')

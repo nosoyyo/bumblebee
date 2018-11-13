@@ -21,8 +21,7 @@ class CChanBee():
         '''
         '''
         ranking = self.config.endpoints['ranking']
-        resp = self.bee._GET(ranking)
-        soup = BeautifulSoup(resp.text, 'lxml').select('div.box-general-list')
+        soup = self.bee._SOUP(ranking).select('div.box-general-list')
 
         soup = self.goodCatsFilter(soup)
         if self.grabInfo(soup):
@@ -81,9 +80,7 @@ class CChanBee():
                 flag = True
             if not desc:
                 endpoint = self.config.endpoints['watch'] + URI
-                resp = self.bee._GET(endpoint)
-                soup = BeautifulSoup(resp.text, 'lxml')
-                desc = soup.select('div.auto-link')[0].text
+                desc = self.bee._SOUP(endpoint).select('div.auto-link')[0].text
                 desc = desc.replace('\r', '\n')
                 self.r.hset('video_desc', URI, desc)
                 print(f'{URI} desc {desc} saved.\n')
@@ -128,19 +125,6 @@ class CChanBee():
     def grab(self):
         for URI in self.top20:
             print(f'downloading {URI}.mp4 ...')
-            started = time.time()
-            resp = self.bee._GET(
-                f'https://ccs3.akamaized.net/cchanclips/{URI}/clip.mp4')
-            usage = time.time() - started
-
-            # local storage
-            with open(f'{self.full_path}/{URI}.mp4', 'wb') as f:
-                f.write(resp.content)
-
-            # save title into redis
-
-            # stats
-            size = os.path.getsize(f'{self.full_path}/{URI}.mp4')
-            print(f'{URI}.mp4 saved on disk.')
-            print(f'{size} bytes, {usage:.1f} seconds. \n\
-            {size / usage / 1024:.1f} kb/s')
+            file_name = f'{self.full_path}/{URI}.mp4'
+            url = f'https://ccs3.akamaized.net/cchanclips/{URI}/clip.mp4'
+            self.bee._DOWNLOAD(url, file_name)

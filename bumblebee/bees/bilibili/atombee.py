@@ -40,11 +40,13 @@ class BiliAtomBee():
         self.file = file_obj
         self.config.preupload_params['name'] = file_obj.name
         self.config.preupload_params['size'] = file_obj.size
+        print(f'loaded {self._whoami()}')
         print(f'bab now load up {self.file.name}, ready to fire!')
 
     def _whoami(self):
         endpoint = self.config.endpoints['user_info']
-        uname = self.bee._XGET(endpoint)
+        uname = self.bee._XGET(endpoint).data['uname']
+        print(uname)
 
     def process(self)->bool:
 

@@ -12,15 +12,17 @@ def loadIfJson(_input: str) -> bool:
         return False
 
 
-def fastPickel(arg=None, ind=None):
+def fastPickle(arg=None, ind=None):
+    '''
     print('if pass int, will always used as indicator not filename!')
+    '''
     objs = os.listdir('debug')
     objs = [int(i.split('.')[0]) for i in objs]
     objs.sort()
     if not arg:
         return objs
     elif isinstance(arg, int):
-        fastPickel(ind=arg)
+        fastPickle(ind=arg)
     elif ind and not obj:
         file_name = f'{objs[ind]}.pickle'
         with open(file_name, 'rb') as f:
