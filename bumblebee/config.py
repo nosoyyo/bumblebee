@@ -1,7 +1,7 @@
 import redis
 
 
-DEBUG = True
+DEBUG = False
 
 
 class ConfigError(Exception):
@@ -125,9 +125,3 @@ class Zhihu(Headers):
                                        {self.url_token}/followees'
         self.endpoints['grabRecFeed'] = f'{self.root}/api/v3/feed/topstory\
                                         /recommend'
-
-    # TODO
-
-    def _getSelfURLToken(self):
-        import requests
-        return ''

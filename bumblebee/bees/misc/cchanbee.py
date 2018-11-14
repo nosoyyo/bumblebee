@@ -1,7 +1,6 @@
 import os
 import time
 import redis
-from bs4 import BeautifulSoup
 
 from config import CChan
 from bees import AbstractBee
@@ -118,7 +117,7 @@ class CChanBee():
 
         # deal with the fresh meat
         self.top20 = [x for x in self.top20 if x not in grabbed]
-        print(f'\n{len(self.top20)} new items to grab.')
+        print(f'{len(self.top20)} new items to grab.\n----------\n')
 
         return bool(len(self.top20))
 

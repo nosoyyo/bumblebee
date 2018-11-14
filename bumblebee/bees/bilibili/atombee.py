@@ -43,10 +43,11 @@ class BiliAtomBee():
         print(f'loaded {self._whoami()}')
         print(f'bab now load up {self.file.name}, ready to fire!')
 
+    @classmethod
     def _whoami(self):
         endpoint = self.config.endpoints['user_info']
         uname = self.bee._XGET(endpoint).data['uname']
-        print(uname)
+        return uname
 
     def process(self)->bool:
 
@@ -72,7 +73,7 @@ class BiliAtomBee():
         aid = self.add(middle)
         if aid:
             # simple check
-            if isinstance(aid, int) and len(aid) == 8:
+            if isinstance(aid, int):
                 is_aid_ok = True
             else:
                 print(f'WARNING! aid {aid} is questionable!')
