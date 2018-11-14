@@ -1,6 +1,7 @@
 import os
 import time
 import redis
+import requests
 
 from config import CChan
 from bees import AbstractBee
@@ -14,13 +15,16 @@ class CChanBee():
     r = redis.Redis(connection_pool=cpool)
 
     config = CChan()
-    bee = AbstractBee(config)
+    s = requests.Session()
+    bee = AbstractBee(config, s)
 
     def __init__(self):
         '''
         '''
         ranking = self.config.endpoints['ranking']
         soup = self.bee._SOUP(ranking).select('div.box-general-list')
+        if not soup:
+            return 'something wrong while grabbing ranking.'
 
         soup = self.goodCatsFilter(soup)
         if self.grabInfo(soup):
@@ -80,7 +84,10 @@ class CChanBee():
             if not desc:
                 endpoint = self.config.endpoints['watch'] + URI
                 desc = self.bee._SOUP(endpoint).select('div.auto-link')[0].text
-                desc = desc.replace('\r', '\n')
+                if not desc:
+                    desc = 'to be completed.'
+                else:
+                    desc = desc.replace('\r', '\n')
                 self.r.hset('video_desc', URI, desc)
                 print(f'{URI} desc {desc} saved.\n')
                 flag = True

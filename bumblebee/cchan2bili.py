@@ -25,8 +25,9 @@ from random import random
 from datetime import datetime
 
 from config import CChan
-from bees import BiliAtomBee, CChanBee
+from bees.bilibili import BiliAtomBee
 from bees.bilibili import BiliVideoFile
+from bees.misc.cchanbee import CChanBee
 from utils import fromTimeStamp, asciiBigSuccess
 
 CCHAN_CONF = CChan()
@@ -170,6 +171,7 @@ schedule.every().day.at(EVENING1).do(job)
 
 
 def main():
+    print("everyhing's fine. waiting for the time to come...")
     while True:
         schedule.run_pending()
 

@@ -2,7 +2,6 @@ import os
 import json
 import time
 import redis
-import requests
 from bs4 import BeautifulSoup
 
 import utils
@@ -17,18 +16,18 @@ class AbstractBee():
     :method _SOUP: return BeautifulSoup(resp.text)
     :method _DOWNLOAD: return bytes or save file_name to local storage.
     '''
-    s = requests.Session()
 
-    def __init__(self, site_obj):
+    def __init__(self, site_obj, _session):
 
         self.cpool = site_obj.cpool
-        self.r = redis.Redis(connection_pool=self.cpool)
         with open(site_obj.cookies_file) as f:
             cookies = json.load(f)
         self.cookies = {item['name']: item['value']
                         for item in cookies if item['domain']
-                        == site_obj.cookies_domain}
+                        == site_obj.domain}
         self.headers = site_obj.headers
+        self.r = redis.Redis(connection_pool=self.cpool)
+        self.s = _session
 
     # TODO
     def detectCookiesExpire(self):
@@ -112,7 +111,8 @@ class AbstractBee():
 
     def _SOUP(self, url: str):
         resp = self._GET(url)
-        return BeautifulSoup(resp._content.decode(), 'lxml')
+        if resp:
+            return BeautifulSoup(resp._content.decode(), 'lxml')
 
     def _DOWNLOAD(self, url: str, file_name=None):
         '''

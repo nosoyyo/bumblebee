@@ -1,6 +1,8 @@
 __doc__ = 'for adapting 3 main types of resp: requests, baidubce & bumblebee'
 import json
+from requests import Response as RequestsResponse
 
+from utils.bce import BceResponse
 from utils import SelfAssemblingClass
 
 
@@ -20,10 +22,10 @@ class GeneralResp():
         if isinstance(resp, SelfAssemblingClass) or isinstance(resp,
                                                                GeneralResp):
             return resp
-        elif 'bce' in resp.__module__:
+        elif isinstance(resp, BceResponse):
             print(f'assebmling a BceResponse .obj..')
             return SelfAssemblingClass(resp.metadata.__dict__)
-        elif 'requests' in resp.__module__:
+        elif isinstance(resp, RequestsResponse):
             print(f'assembling a requests.Response obj...')
             try:
                 doc = json.loads(resp.text)

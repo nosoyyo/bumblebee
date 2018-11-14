@@ -24,7 +24,7 @@ class Bilibili(Headers):
         host='localhost', port=6379, decode_responses=True, db=2)
 
     # cookies_file = 'cookies/bilibili.json'
-    cookies_domain = '.bilibili.com'
+    domain = '.bilibili.com'
     account = 'https://account.bilibili.com'
     member = 'https://member.bilibili.com'
     default_dir = 'bilibee/cchan'
@@ -65,7 +65,7 @@ class CChan(Headers):
     cpool = redis.ConnectionPool(
         host='localhost', port=6379, decode_responses=True, db=2)
 
-    cookies_domain = '.cchan.tv'
+    domain = '.cchan.tv'
     cookies_file = 'cookies/cchan.json'
     default_dir = 'bilibee/cchan'
     root = 'https://www.cchan.tv'
@@ -95,33 +95,27 @@ class Instagram(Headers):
         host='localhost', port=6379, decode_responses=True, db=0)
 
     cookies_file = ''
-    cookies_domain = ''
+    domain = ''
     root = ''
 
 
-class Zhihu(Headers):
+class Weibo(Headers):
 
+    # db not decided yet since this is on hold
     cpool = redis.ConnectionPool(
-        host='localhost', port=6379, decode_responses=True, db=1)
+        host='localhost', port=6379, decode_responses=True, db=3)
 
-    cookies_file = 'cookies/zhihu.json'
-    cookies_domain = '.zhihu.com'
-    root = 'https://www.zhihu.com'
-    # get this by get self info
-    # url_token = 'self_url_token'
-    endpoints = {}
+    cookies_file = 'cookies/weibo.json'
+    domain = '.weibo.com'
+    root = 'https://weibo.com'
+    default_dir = 'bumblebee/weibo'
 
     def __init__(self):
-
-        self.url_token = self._getSelfURLToken()
-
-        # weird...
-        self.headers = self.headers.copy()
-        self.headers['referer'] = {
-            'referer': f'{self.root}/people/{self.url_token}'}
-
-        self.endpoints['postPins'] = f'{self.root}/api/v4/pins'
-        self.endpoints['getFolloweeList'] = f'{self.root}/api/v4/members/\
-                                       {self.url_token}/followees'
-        self.endpoints['grabRecFeed'] = f'{self.root}/api/v3/feed/topstory\
-                                        /recommend'
+        self.api_ver = 2
+        self.endpoints = {}
+        self.endpoints['api'] = 'https://api.weibo.com'
+        self.endpoints['auth'] = f"{self.endpoints['api']}/oauth2/authorize"
+        self.endpoints['token'] = f"{self.endpoints['api']}\
+/{self.api_ver}/oauth2/access_token"
+        self.endpoints['api_url'] = f"{self.endpoints['api']}\
+/{self.api_ver}"

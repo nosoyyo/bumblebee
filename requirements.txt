@@ -6,3 +6,7 @@ redis-py
 mongodb
 pymongo
 pycrypto
+
+# weibo login
+rsa
+Pillow

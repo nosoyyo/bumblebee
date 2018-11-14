@@ -1,4 +1,5 @@
 import json
+import time
 import logging
 import requests
 
@@ -32,7 +33,8 @@ class BiliAtomBee():
     '''
 
     config = Bilibili()
-    bee = AbstractBee(config)
+    s = requests.Session()
+    bee = AbstractBee(config, s)
     bee.headers = config.headers.copy()
     r = bee.r
 
@@ -90,6 +92,13 @@ class BiliAtomBee():
             print(f'failed getting aid.')
             flag = False
         return flag
+
+    @property
+    def alive(self):
+        if self.expires_at:
+            return self.expires_at > time.time()
+        else:
+            return False
 
     def preUpload(self) -> json:
         '''

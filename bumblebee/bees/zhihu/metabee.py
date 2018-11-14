@@ -1,9 +1,20 @@
 import utils
-from .bumblebee import BumbleBee
-from config import self_url_token, root
+
+from config import Zhihu
 
 
-class MetaBee(BumbleBee):
+class MetaBee():
+
+    def __init__(self):
+        self.headers = self.headers.copy()
+        self.headers['referer'] = {
+            'referer': f'{self.root}/people/{self.url_token}'}
+
+        self.endpoints['postPins'] = f'{self.root}/api/v4/pins'
+        self.endpoints['getFolloweeList'] = f'{self.root}/api/v4/members/\
+                                       {self.url_token}/followees'
+        self.endpoints['grabRecFeed'] = f'{self.root}/api/v3/feed/topstory\
+                                        /recommend'
 
     @utils.safeCheck
     def getFolloweeCount(self, url_token=self_url_token) -> int:

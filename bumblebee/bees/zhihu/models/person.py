@@ -1,7 +1,7 @@
 import logging
 
 from .base import BeeModel
-from config import Zhihu
+from conf.zhihu import Zhihu
 
 
 # init
@@ -17,7 +17,7 @@ class Person(BeeModel):
 
     '''
     root = Zhihu.root
-    cookies_domain = Zhihu.cookies_domain
+    domain = Zhihu.domain
 
     col = 'persons'
     key_objs = []
