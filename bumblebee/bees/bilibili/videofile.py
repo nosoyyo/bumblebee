@@ -1,4 +1,4 @@
-from config import Bilibili
+from conf.bili import Bilibili
 from models import VideoFile
 
 

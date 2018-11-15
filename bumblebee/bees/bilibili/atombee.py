@@ -3,8 +3,8 @@ import time
 import logging
 import requests
 
-from config import Bilibili
 from bees import AbstractBee
+from conf.bili import Bilibili
 from utils import SelfAssemblingClass, fromTimeStamp
 from utils.bce import BosClient, BceCredentials, BceClientConfiguration
 

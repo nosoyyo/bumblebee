@@ -24,7 +24,7 @@ import schedule
 from random import random
 from datetime import datetime
 
-from config import CChan
+from conf.cchan import CChan
 from bees.bilibili import BiliAtomBee
 from bees.bilibili import BiliVideoFile
 from bees.misc.cchanbee import CChanBee
@@ -94,7 +94,7 @@ def checkLocalStorage(CCHAN_CONF, path: str = None) -> list:
 
     : return: a `list` of video file path(s)
     '''
-    _dir = path or BiliVideoFile.full_path
+    _dir = path or CCHAN_CONF.full_path
     return [f for f in os.listdir(_dir) if f.endswith('.mp4')]
 
 

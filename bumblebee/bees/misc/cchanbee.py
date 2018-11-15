@@ -3,7 +3,7 @@ import time
 import redis
 import requests
 
-from config import CChan
+from conf.cchan import CChan
 from bees import AbstractBee
 from utils import sumChars, fromTimeStamp
 
@@ -22,9 +22,11 @@ class CChanBee():
         '''
         '''
         ranking = self.config.endpoints['ranking']
-        soup = self.bee._SOUP(ranking).select('div.box-general-list')
-        if not soup:
+        resp = self.bee._SOUP(ranking)
+        if not resp:
             return 'something wrong while grabbing ranking.'
+        else:
+            soup = resp.select('div.box-general-list')
 
         soup = self.goodCatsFilter(soup)
         if self.grabInfo(soup):
@@ -82,7 +84,7 @@ class CChanBee():
                 print(f'\n{URI} title {title} saved.')
                 flag = True
             if not desc:
-                endpoint = self.config.endpoints['watch'] + URI
+                endpoint = f"{self.config.endpoints['watch']}/{URI}"
                 desc = self.bee._SOUP(endpoint).select('div.auto-link')[0].text
                 if not desc:
                     desc = 'to be completed.'

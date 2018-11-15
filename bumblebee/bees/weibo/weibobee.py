@@ -11,13 +11,14 @@ import time
 import requests
 from urllib.parse import urlencode
 
-from config import Weibo
 from bees import AbstractBee
+from .weibologin import WeiboLogin
+from conf.weibo import WeiboBeeConf
 
 
 class WeiboBee():
 
-    config = Weibo()
+    config = WeiboBeeConf()
     endpoints = config.endpoints
     expires_at = ''
     s = requests.Session()
